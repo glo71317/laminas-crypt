@@ -14,7 +14,7 @@ use function sprintf;
  * Symmetric\SymmetricInterface. Additionally, it registers a number of default
  * symmetric adapters available.
  */
-class SymmetricPluginManager implements ContainerInterface
+final class SymmetricPluginManager implements ContainerInterface
 {
     /**
      * Default set of symmetric adapters

@@ -14,7 +14,7 @@ use function sprintf;
  * Padding\PaddingInterface. Additionally, it registers a number of default
  * padding adapters available.
  */
-class PaddingPluginManager implements ContainerInterface
+final class PaddingPluginManager implements ContainerInterface
 {
     /** @var array<string, string> */
     private $paddings = [
