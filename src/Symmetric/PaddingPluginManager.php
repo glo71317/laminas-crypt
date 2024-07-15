@@ -25,11 +25,8 @@ class PaddingPluginManager implements ContainerInterface
 
     /**
      * Do we have the padding plugin?
-     *
-     * @param  string $id
-     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->paddings);
     }
@@ -37,10 +34,9 @@ class PaddingPluginManager implements ContainerInterface
     /**
      * Retrieve the padding plugin
      *
-     * @param  string $id
      * @return Padding\PaddingInterface
      */
-    public function get($id)
+    public function get(string $id)
     {
         if (! $this->has($id)) {
             throw new Exception\NotFoundException(sprintf(

@@ -28,11 +28,8 @@ class SymmetricPluginManager implements ContainerInterface
 
     /**
      * Do we have the symmetric plugin?
-     *
-     * @param  string $id
-     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->symmetric);
     }
@@ -40,10 +37,9 @@ class SymmetricPluginManager implements ContainerInterface
     /**
      * Retrieve the symmetric plugin
      *
-     * @param  string $id
      * @return Symmetric\SymmetricInterface
      */
-    public function get($id)
+    public function get(string $id)
     {
         if (! $this->has($id)) {
             throw new Exception\NotFoundException(sprintf(
