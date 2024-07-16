@@ -1,9 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\PublicKey;
 
+use Laminas\Crypt\PublicKey\Rsa\AbstractKey;
 use Laminas\Crypt\PublicKey\Rsa\Exception;
+use Laminas\Crypt\PublicKey\Rsa\PrivateKey;
+use Laminas\Crypt\PublicKey\Rsa\PublicKey;
+use Laminas\Crypt\PublicKey\RsaOptions;
 use Laminas\Stdlib\ArrayUtils;
 use Traversable;
 
@@ -27,18 +32,13 @@ class Rsa
     public const MODE_BASE64 = 2;
     public const MODE_RAW    = 3;
 
-    /** @var RsaOptions */
-    protected $options;
-
     /**
      * RSA instance factory
      *
-     * @param  array|Traversable $options
-     * @return Rsa
      * @throws Rsa\Exception\RuntimeException
      * @throws Rsa\Exception\InvalidArgumentException
      */
-    public static function factory($options)
+    public static function factory(Traversable|array $options): Rsa
     {
         if (! extension_loaded('openssl')) {
             throw new Exception\RuntimeException(
@@ -58,9 +58,9 @@ class Rsa
         $passPhrase = $options['pass_phrase'] ?? null;
         if (isset($options['private_key'])) {
             if (is_file($options['private_key'])) {
-                $privateKey = Rsa\PrivateKey::fromFile($options['private_key'], $passPhrase);
+                $privateKey = PrivateKey::fromFile($options['private_key'], $passPhrase);
             } elseif (is_string($options['private_key'])) {
-                $privateKey = new Rsa\PrivateKey($options['private_key'], $passPhrase);
+                $privateKey = new PrivateKey($options['private_key'], $passPhrase);
             } else {
                 throw new Exception\InvalidArgumentException(
                     'Parameter "private_key" must be PEM formatted string or path to key file'
@@ -72,9 +72,9 @@ class Rsa
         $publicKey = null;
         if (isset($options['public_key'])) {
             if (is_file($options['public_key'])) {
-                $publicKey = Rsa\PublicKey::fromFile($options['public_key']);
+                $publicKey = PublicKey::fromFile($options['public_key']);
             } elseif (is_string($options['public_key'])) {
-                $publicKey = new Rsa\PublicKey($options['public_key']);
+                $publicKey = new PublicKey($options['public_key']);
             } else {
                 throw new Exception\InvalidArgumentException(
                     'Parameter "public_key" must be PEM/certificate string or path to key/certificate file'
@@ -97,27 +97,19 @@ class Rsa
     /**
      * @throws Rsa\Exception\RuntimeException
      */
-    public function __construct(?RsaOptions $options = null)
+    public function __construct(protected RsaOptions $options = new RsaOptions())
     {
         if (! extension_loaded('openssl')) {
             throw new Exception\RuntimeException(
                 'Laminas\Crypt\PublicKey\Rsa requires openssl extension to be loaded'
             );
         }
-
-        if ($options === null) {
-            $this->options = new RsaOptions();
-        } else {
-            $this->options = $options;
-        }
     }
 
     /**
      * Set options
-     *
-     * @return Rsa Provides a fluent interface
      */
-    public function setOptions(RsaOptions $options)
+    public function setOptions(RsaOptions $options): static
     {
         $this->options = $options;
         return $this;
@@ -125,20 +117,16 @@ class Rsa
 
     /**
      * Get options
-     *
-     * @return RsaOptions
      */
-    public function getOptions()
+    public function getOptions(): RsaOptions
     {
         return $this->options;
     }
 
     /**
      * Return last openssl error(s)
-     *
-     * @return string
      */
-    public function getOpensslErrorString()
+    public function getOpensslErrorString(): string
     {
         $message = '';
         while (false !== ($error = openssl_error_string())) {
@@ -150,14 +138,12 @@ class Rsa
     /**
      * Sign with private key
      *
-     * @param  string     $data
-     * @return string
      * @throws Rsa\Exception\RuntimeException
      */
-    public function sign($data, ?Rsa\PrivateKey $privateKey = null)
+    public function sign(string $data, ?Rsa\PrivateKey $privateKey = null): string
     {
         $signature = '';
-        if (null === $privateKey) {
+        if (! $privateKey instanceof PrivateKey) {
             $privateKey = $this->options->getPrivateKey();
         }
 
@@ -177,7 +163,7 @@ class Rsa
             return $signature;
         }
 
-        return base64_encode($signature);
+        return base64_encode((string) $signature);
     }
 
     /**
@@ -192,19 +178,16 @@ class Rsa
      * @see Rsa::MODE_BASE64
      * @see Rsa::MODE_RAW
      *
-     * @param  string $data
-     * @param  string $signature
      * @param  int                $mode Input encoding
-     * @return bool
      * @throws Rsa\Exception\RuntimeException
      */
     public function verify(
-        $data,
-        $signature,
+        string $data,
+        string $signature,
         ?Rsa\PublicKey $publicKey = null,
-        $mode = self::MODE_AUTO
-    ) {
-        if (null === $publicKey) {
+        int $mode = self::MODE_AUTO
+    ): bool {
+        if (! $publicKey instanceof PublicKey) {
             $publicKey = $this->options->getPublicKey();
         }
 
@@ -242,26 +225,20 @@ class Rsa
     /**
      * Encrypt with private/public key
      *
-     * @param  string          $data
-     * @return string
      * @throws Rsa\Exception\InvalidArgumentException
      */
-    public function encrypt($data, ?Rsa\AbstractKey $key = null)
+    public function encrypt(string $data, ?Rsa\AbstractKey $key = null): string
     {
-        if (null === $key) {
+        if (! $key instanceof AbstractKey) {
             $key = $this->options->getPublicKey();
         }
 
-        if (null === $key) {
+        if (! $key instanceof AbstractKey) {
             throw new Exception\InvalidArgumentException('No key specified for the decryption');
         }
 
-        $padding = $this->getOptions()->getOpensslPadding();
-        if (null === $padding) {
-            $encrypted = $key->encrypt($data);
-        } else {
-            $encrypted = $key->encrypt($data, $padding);
-        }
+        $padding   = $this->getOptions()->getOpensslPadding();
+        $encrypted = null === $padding ? $key->encrypt($data) : $key->encrypt($data, $padding);
 
         if ($this->options->getBinaryOutput()) {
             return $encrypted;
@@ -282,21 +259,19 @@ class Rsa
      * @see Rsa::MODE_BASE64
      * @see Rsa::MODE_RAW
      *
-     * @param  string          $data
      * @param  int             $mode Input encoding
-     * @return string
      * @throws Rsa\Exception\InvalidArgumentException
      */
     public function decrypt(
-        $data,
+        string $data,
         ?Rsa\AbstractKey $key = null,
-        $mode = self::MODE_AUTO
-    ) {
-        if (null === $key) {
+        int $mode = self::MODE_AUTO
+    ): string {
+        if (! $key instanceof AbstractKey) {
             $key = $this->options->getPrivateKey();
         }
 
-        if (null === $key) {
+        if (! $key instanceof AbstractKey) {
             throw new Exception\InvalidArgumentException('No key specified for the decryption');
         }
 
@@ -322,20 +297,5 @@ class Rsa
         } else {
             return $key->decrypt($data, $padding);
         }
-    }
-
-    /**
-     * Generate new private/public key pair
-     *
-     * @see RsaOptions::generateKeys()
-     *
-     * @param  array $opensslConfig
-     * @return Rsa Provides a fluent interface
-     * @throws Rsa\Exception\RuntimeException
-     */
-    public function generateKeys(array $opensslConfig = [])
-    {
-        $this->options->generateKeys($opensslConfig);
-        return $this;
     }
 }

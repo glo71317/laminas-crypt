@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt;
@@ -12,8 +13,6 @@ use Psr\Container\NotFoundExceptionInterface as NotFoundException;
 use function base64_decode;
 use function base64_encode;
 use function class_exists;
-use function get_class;
-use function gettype;
 use function in_array;
 use function is_array;
 use function is_object;
@@ -29,81 +28,59 @@ class BlockCipher
 {
     /**
      * Hash algorithm for Pbkdf2
-     *
-     * @var string
      */
-    protected $pbkdf2Hash = 'sha256';
-
-    /**
-     * Symmetric cipher
-     *
-     * @var SymmetricInterface
-     */
-    protected $cipher;
+    protected string $pbkdf2Hash = 'sha256';
 
     /**
      * Symmetric cipher plugin manager
-     *
-     * @var SymmetricPluginManager
      */
-    protected static $symmetricPlugins;
+    protected static ?ContainerInterface $symmetricPlugins = null;
 
     /**
      * Hash algorithm for HMAC
-     *
-     * @var string
      */
-    protected $hash = 'sha256';
+    protected string $hash = 'sha256';
 
     /**
      * Check if the salt has been set
-     *
-     * @var bool
      */
-    protected $saltSetted = false;
+    protected bool $saltSetted = false;
 
     /**
      * The output is binary?
-     *
-     * @var bool
      */
-    protected $binaryOutput = false;
+    protected bool $binaryOutput = false;
 
     /**
      * Number of iterations for Pbkdf2
-     *
-     * @var string
      */
-    protected $keyIteration = 5000;
+    protected int $keyIteration = 5000;
 
     /**
      * Key
-     *
-     * @var string
      */
-    protected $key;
+    protected string $key;
 
     /**
      * Constructor
      */
-    public function __construct(SymmetricInterface $cipher)
-    {
-        $this->cipher = $cipher;
+    public function __construct(
+        /**
+         * Symmetric cipher
+         */
+        protected SymmetricInterface $cipher
+    ) {
     }
 
     /**
      * Factory
-     *
-     * @param  string      $adapter
-     * @param  array       $options
-     * @return BlockCipher
      */
-    public static function factory($adapter, $options = [])
+    public static function factory(string $adapter, array $options = []): static
     {
         $plugins = static::getSymmetricPluginManager();
         try {
             $cipher = $plugins->get($adapter);
-        } catch (NotFoundException $e) {
+        } catch (NotFoundException) {
             throw new Exception\RuntimeException(sprintf(
                 'The symmetric adapter %s does not exist',
                 $adapter
@@ -115,12 +92,10 @@ class BlockCipher
 
     /**
      * Returns the symmetric cipher plugin manager.  If it doesn't exist it's created.
-     *
-     * @return ContainerInterface
      */
-    public static function getSymmetricPluginManager()
+    public static function getSymmetricPluginManager(): ContainerInterface
     {
-        if (static::$symmetricPlugins === null) {
+        if (! static::$symmetricPlugins instanceof ContainerInterface) {
             static::setSymmetricPluginManager(new SymmetricPluginManager());
         }
 
@@ -133,7 +108,7 @@ class BlockCipher
      * @param  string|SymmetricPluginManager      $plugins
      * @throws Exception\InvalidArgumentException
      */
-    public static function setSymmetricPluginManager($plugins)
+    public static function setSymmetricPluginManager(string|ContainerInterface $plugins): void
     {
         if (is_string($plugins)) {
             if (! class_exists($plugins) || ! is_subclass_of($plugins, ContainerInterface::class)) {
@@ -145,21 +120,13 @@ class BlockCipher
             }
             $plugins = new $plugins();
         }
-        if (! $plugins instanceof ContainerInterface) {
-            throw new Exception\InvalidArgumentException(sprintf(
-                'Symmetric plugin must implements Interop\Container\ContainerInterface;; received "%s"',
-                is_object($plugins) ? get_class($plugins) : gettype($plugins)
-            ));
-        }
         static::$symmetricPlugins = $plugins;
     }
 
     /**
      * Set the symmetric cipher
-     *
-     * @return BlockCipher Provides a fluent interface
      */
-    public function setCipher(SymmetricInterface $cipher)
+    public function setCipher(SymmetricInterface $cipher): static
     {
         $this->cipher = $cipher;
         return $this;
@@ -167,33 +134,26 @@ class BlockCipher
 
     /**
      * Get symmetric cipher
-     *
-     * @return SymmetricInterface
      */
-    public function getCipher()
+    public function getCipher(): SymmetricInterface
     {
         return $this->cipher;
     }
 
     /**
      * Set the number of iterations for Pbkdf2
-     *
-     * @param  int $num
-     * @return BlockCipher Provides a fluent interface
      */
-    public function setKeyIteration($num)
+    public function setKeyIteration(int $num): static
     {
-        $this->keyIteration = (int) $num;
+        $this->keyIteration = $num;
 
         return $this;
     }
 
     /**
      * Get the number of iterations for Pbkdf2
-     *
-     * @return int
      */
-    public function getKeyIteration()
+    public function getKeyIteration(): int
     {
         return $this->keyIteration;
     }
@@ -201,11 +161,9 @@ class BlockCipher
     /**
      * Set the salt (IV)
      *
-     * @param  string $salt
-     * @return BlockCipher Provides a fluent interface
      * @throws Exception\InvalidArgumentException
      */
-    public function setSalt($salt)
+    public function setSalt(string $salt): static
     {
         try {
             $this->cipher->setSalt($salt);
@@ -219,43 +177,34 @@ class BlockCipher
 
     /**
      * Get the salt (IV) according to the size requested by the algorithm
-     *
-     * @return string
      */
-    public function getSalt()
+    public function getSalt(): string|null
     {
         return $this->cipher->getSalt();
     }
 
     /**
      * Get the original salt value
-     *
-     * @return string
      */
-    public function getOriginalSalt()
+    public function getOriginalSalt(): string
     {
         return $this->cipher->getOriginalSalt();
     }
 
     /**
      * Enable/disable the binary output
-     *
-     * @param  bool $value
-     * @return BlockCipher Provides a fluent interface
      */
-    public function setBinaryOutput($value)
+    public function setBinaryOutput(bool $value): static
     {
-        $this->binaryOutput = (bool) $value;
+        $this->binaryOutput = $value;
 
         return $this;
     }
 
     /**
      * Get the value of binary output
-     *
-     * @return bool
      */
-    public function getBinaryOutput()
+    public function getBinaryOutput(): bool
     {
         return $this->binaryOutput;
     }
@@ -263,13 +212,11 @@ class BlockCipher
     /**
      * Set the encryption/decryption key
      *
-     * @param  string $key
-     * @return BlockCipher Provides a fluent interface
      * @throws Exception\InvalidArgumentException
      */
-    public function setKey($key)
+    public function setKey(string $key): static
     {
-        if (empty($key)) {
+        if ($key === '' || $key === '0') {
             throw new Exception\InvalidArgumentException('The key cannot be empty');
         }
         $this->key = $key;
@@ -279,10 +226,8 @@ class BlockCipher
 
     /**
      * Get the key
-     *
-     * @return string
      */
-    public function getKey()
+    public function getKey(): string
     {
         return $this->key;
     }
@@ -290,11 +235,9 @@ class BlockCipher
     /**
      * Set algorithm of the symmetric cipher
      *
-     * @param  string $algo
-     * @return BlockCipher Provides a fluent interface
      * @throws Exception\InvalidArgumentException
      */
-    public function setCipherAlgorithm($algo)
+    public function setCipherAlgorithm(string $algo): static
     {
         try {
             $this->cipher->setAlgorithm($algo);
@@ -307,20 +250,16 @@ class BlockCipher
 
     /**
      * Get the cipher algorithm
-     *
-     * @return string|bool
      */
-    public function getCipherAlgorithm()
+    public function getCipherAlgorithm(): string
     {
         return $this->cipher->getAlgorithm();
     }
 
     /**
      * Get the supported algorithms of the symmetric cipher
-     *
-     * @return array
      */
-    public function getCipherSupportedAlgorithms()
+    public function getCipherSupportedAlgorithms(): array
     {
         return $this->cipher->getSupportedAlgorithms();
     }
@@ -328,11 +267,9 @@ class BlockCipher
     /**
      * Set the hash algorithm for HMAC authentication
      *
-     * @param  string $hash
-     * @return BlockCipher Provides a fluent interface
      * @throws Exception\InvalidArgumentException
      */
-    public function setHashAlgorithm($hash)
+    public function setHashAlgorithm(string $hash): static
     {
         if (! Hash::isSupported($hash)) {
             throw new Exception\InvalidArgumentException(
@@ -346,10 +283,8 @@ class BlockCipher
 
     /**
      * Get the hash algorithm for HMAC authentication
-     *
-     * @return string
      */
-    public function getHashAlgorithm()
+    public function getHashAlgorithm(): string
     {
         return $this->hash;
     }
@@ -357,11 +292,9 @@ class BlockCipher
     /**
      * Set the hash algorithm for the Pbkdf2
      *
-     * @param  string $hash
-     * @return BlockCipher Provides a fluent interface
      * @throws Exception\InvalidArgumentException
      */
-    public function setPbkdf2HashAlgorithm($hash)
+    public function setPbkdf2HashAlgorithm(string $hash): static
     {
         if (! Hash::isSupported($hash)) {
             throw new Exception\InvalidArgumentException(
@@ -375,10 +308,8 @@ class BlockCipher
 
     /**
      * Get the Pbkdf2 hash algorithm
-     *
-     * @return string
      */
-    public function getPbkdf2HashAlgorithm()
+    public function getPbkdf2HashAlgorithm(): string
     {
         return $this->pbkdf2Hash;
     }
@@ -386,11 +317,9 @@ class BlockCipher
     /**
      * Encrypt then authenticate using HMAC
      *
-     * @param  string $data
-     * @return string
      * @throws Exception\InvalidArgumentException
      */
-    public function encrypt($data)
+    public function encrypt(string $data): string
     {
         // 0 (as integer), 0.0 (as float) & '0' (as string) will return false, though these should be allowed
         // Must be a string, integer, or float in order to encrypt
@@ -407,7 +336,7 @@ class BlockCipher
             $data = (string) $data;
         }
 
-        if (empty($this->key)) {
+        if (! isset($this->key) || ($this->key === '' || $this->key === '0')) {
             throw new Exception\InvalidArgumentException('No key specified for the encryption');
         }
         $keySize = $this->cipher->getKeySize();
@@ -443,11 +372,9 @@ class BlockCipher
     /**
      * Decrypt
      *
-     * @param  string $data
-     * @return string|bool
      * @throws Exception\InvalidArgumentException
      */
-    public function decrypt($data)
+    public function decrypt(string $data): string|false
     {
         if (! is_string($data)) {
             throw new Exception\InvalidArgumentException('The data to decrypt must be a string');
@@ -455,7 +382,7 @@ class BlockCipher
         if ('' === $data) {
             throw new Exception\InvalidArgumentException('The data to decrypt cannot be empty');
         }
-        if (empty($this->key)) {
+        if (! isset($this->key) || ($this->key === '' || $this->key === '0')) {
             throw new Exception\InvalidArgumentException('No key specified for the decryption');
         }
 
@@ -495,12 +422,9 @@ class BlockCipher
     /**
      * Note: CCM and GCM modes do not need HMAC
      *
-     * @param string $data
-     * @param int    $keySize
-     * @return string
      * @throws Exception\InvalidArgumentException
      */
-    private function encryptViaCcmOrGcm($data, $keySize)
+    private function encryptViaCcmOrGcm(string $data, int $keySize): string
     {
         $this->cipher->setKey(Pbkdf2::calc(
             $this->getPbkdf2HashAlgorithm(),
@@ -518,12 +442,9 @@ class BlockCipher
     /**
      * Note: CCM and GCM modes do not need HMAC
      *
-     * @param string $data
-     * @param int    $keySize
-     * @return string
      * @throws Exception\InvalidArgumentException
      */
-    private function decryptViaCcmOrGcm($data, $keySize)
+    private function decryptViaCcmOrGcm(string $data, int $keySize): string
     {
         $cipherText = $this->binaryOutput ? $data : base64_decode($data);
         $iv         = mb_substr($cipherText, $this->cipher->getTagSize(), $this->cipher->getSaltSize(), '8bit');

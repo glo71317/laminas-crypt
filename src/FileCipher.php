@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt;
 
 use Laminas\Crypt\Key\Derivation\Pbkdf2;
+use Laminas\Crypt\Symmetric\SymmetricInterface;
 use Laminas\Math\Rand;
 
 use function fclose;
@@ -26,50 +28,37 @@ use function unlink;
 class FileCipher
 {
     public const BUFFER_SIZE = 1048576; // 16 * 65536 bytes = 1 Mb
-
     /**
      * Hash algorithm for Pbkdf2
-     *
-     * @var string
      */
-    protected $pbkdf2Hash = 'sha256';
+    protected string $pbkdf2Hash = 'sha256';
 
     /**
      * Hash algorithm for HMAC
-     *
-     * @var string
      */
-    protected $hash = 'sha256';
+    protected string $hash = 'sha256';
 
     /**
      * Number of iterations for Pbkdf2
-     *
-     * @var int
      */
-    protected $keyIteration = 10000;
+    protected int $keyIteration = 10000;
 
     /**
      * Key
-     *
-     * @var string
      */
-    protected $key;
+    protected string $key;
 
     /**
      * Cipher
-     *
-     * @var SymmetricInterface
      */
-    protected $cipher;
+    protected ?SymmetricInterface $cipher;
 
     /**
      * Constructor
-     *
-     * @param SymmetricInterface $cipher
      */
     public function __construct(?Symmetric\SymmetricInterface $cipher = null)
     {
-        if (null === $cipher) {
+        if (! $cipher instanceof SymmetricInterface) {
             $cipher = new Symmetric\Openssl();
         }
         $this->cipher = $cipher;
@@ -77,40 +66,32 @@ class FileCipher
 
     /**
      * Set the cipher object
-     *
-     * @param SymmetricInterface $cipher
      */
-    public function setCipher(Symmetric\SymmetricInterface $cipher)
+    public function setCipher(SymmetricInterface $cipher): void
     {
         $this->cipher = $cipher;
     }
 
     /**
      * Get the cipher object
-     *
-     * @return SymmetricInterface
      */
-    public function getCipher()
+    public function getCipher(): ?SymmetricInterface
     {
         return $this->cipher;
     }
 
     /**
      * Set the number of iterations for Pbkdf2
-     *
-     * @param  int  $num
      */
-    public function setKeyIteration($num)
+    public function setKeyIteration(int $num): void
     {
-        $this->keyIteration = (int) $num;
+        $this->keyIteration = $num;
     }
 
     /**
      * Get the number of iterations for Pbkdf2
-     *
-     * @return int
      */
-    public function getKeyIteration()
+    public function getKeyIteration(): int
     {
         return $this->keyIteration;
     }
@@ -118,53 +99,44 @@ class FileCipher
     /**
      * Set the encryption/decryption key
      *
-     * @param  string                             $key
      * @throws Exception\InvalidArgumentException
      */
-    public function setKey($key)
+    public function setKey(string $key): void
     {
-        if (empty($key)) {
+        if ($key === '' || $key === '0') {
             throw new Exception\InvalidArgumentException('The key cannot be empty');
         }
-        $this->key = (string) $key;
+        $this->key = $key;
     }
 
     /**
      * Get the key
-     *
-     * @return string|null
      */
-    public function getKey()
+    public function getKey(): string|null
     {
         return $this->key;
     }
 
     /**
      * Set algorithm of the symmetric cipher
-     *
-     * @param  string                             $algo
      */
-    public function setCipherAlgorithm($algo)
+    public function setCipherAlgorithm(string $algo): void
     {
         $this->cipher->setAlgorithm($algo);
     }
 
     /**
      * Get the cipher algorithm
-     *
-     * @return string|bool
      */
-    public function getCipherAlgorithm()
+    public function getCipherAlgorithm(): string
     {
         return $this->cipher->getAlgorithm();
     }
 
     /**
      * Get the supported algorithms of the symmetric cipher
-     *
-     * @return array
      */
-    public function getCipherSupportedAlgorithms()
+    public function getCipherSupportedAlgorithms(): array
     {
         return $this->cipher->getSupportedAlgorithms();
     }
@@ -172,25 +144,22 @@ class FileCipher
     /**
      * Set the hash algorithm for HMAC authentication
      *
-     * @param  string                             $hash
      * @throws Exception\InvalidArgumentException
      */
-    public function setHashAlgorithm($hash)
+    public function setHashAlgorithm(string $hash): void
     {
         if (! Hash::isSupported($hash)) {
             throw new Exception\InvalidArgumentException(
                 "The specified hash algorithm '{$hash}' is not supported by Laminas\Crypt\Hash"
             );
         }
-        $this->hash = (string) $hash;
+        $this->hash = $hash;
     }
 
     /**
      * Get the hash algorithm for HMAC authentication
-     *
-     * @return string
      */
-    public function getHashAlgorithm()
+    public function getHashAlgorithm(): string
     {
         return $this->hash;
     }
@@ -198,25 +167,22 @@ class FileCipher
     /**
      * Set the hash algorithm for the Pbkdf2
      *
-     * @param  string                             $hash
      * @throws Exception\InvalidArgumentException
      */
-    public function setPbkdf2HashAlgorithm($hash)
+    public function setPbkdf2HashAlgorithm(string $hash): void
     {
         if (! Hash::isSupported($hash)) {
             throw new Exception\InvalidArgumentException(
                 "The specified hash algorithm '{$hash}' is not supported by Laminas\Crypt\Hash"
             );
         }
-        $this->pbkdf2Hash = (string) $hash;
+        $this->pbkdf2Hash = $hash;
     }
 
     /**
      * Get the Pbkdf2 hash algorithm
-     *
-     * @return string
      */
-    public function getPbkdf2HashAlgorithm()
+    public function getPbkdf2HashAlgorithm(): string
     {
         return $this->pbkdf2Hash;
     }
@@ -224,15 +190,12 @@ class FileCipher
     /**
      * Encrypt then authenticate a file using HMAC
      *
-     * @param  string                             $fileIn
-     * @param  string                             $fileOut
-     * @return bool
      * @throws Exception\InvalidArgumentException
      */
-    public function encrypt($fileIn, $fileOut)
+    public function encrypt(string $fileIn, string $fileOut): bool
     {
         $this->checkFileInOut($fileIn, $fileOut);
-        if (empty($this->key)) {
+        if (! isset($this->key) || ($this->key === '' || $this->key === '0')) {
             throw new Exception\InvalidArgumentException('No key specified for encryption');
         }
 
@@ -270,7 +233,7 @@ class FileCipher
             $result = $this->cipher->encrypt($data);
             if ($size <= self::BUFFER_SIZE) {
                 // Write a placeholder for the HMAC and write the IV
-                fwrite($write, str_repeat(0, Hmac::getOutputSize($hashAlgo)));
+                fwrite($write, str_repeat('0', Hmac::getOutputSize($hashAlgo)));
             } else {
                 $result = mb_substr($result, $saltSize, null, '8bit');
             }
@@ -299,15 +262,12 @@ class FileCipher
     /**
      * Decrypt a file
      *
-     * @param  string                             $fileIn
-     * @param  string                             $fileOut
-     * @return bool
      * @throws Exception\InvalidArgumentException
      */
-    public function decrypt($fileIn, $fileOut)
+    public function decrypt(string $fileIn, string $fileOut): bool
     {
         $this->checkFileInOut($fileIn, $fileOut);
-        if (empty($this->key)) {
+        if (! isset($this->key) || ($this->key === '' || $this->key === '0')) {
             throw new Exception\InvalidArgumentException('No key specified for decryption');
         }
 
@@ -369,11 +329,9 @@ class FileCipher
     /**
      * Check that input file exists and output file don't
      *
-     * @param  string $fileIn
-     * @param  string $fileOut
      * @throws Exception\InvalidArgumentException
      */
-    protected function checkFileInOut($fileIn, $fileOut)
+    protected function checkFileInOut(string $fileIn, string $fileOut): void
     {
         if (! file_exists($fileIn)) {
             throw new Exception\InvalidArgumentException(sprintf(

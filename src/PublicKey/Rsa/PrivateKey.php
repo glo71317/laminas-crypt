@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\PublicKey\Rsa;
@@ -22,20 +23,15 @@ class PrivateKey extends AbstractKey
 {
     /**
      * Public key
-     *
-     * @var PublicKey
      */
-    protected $publicKey;
+    protected ?PublicKey $publicKey = null;
 
     /**
      * Create private key instance from PEM formatted key file
      *
-     * @param  string      $pemFile
-     * @param  string|null $passPhrase
-     * @return PrivateKey
      * @throws Exception\InvalidArgumentException
      */
-    public static function fromFile($pemFile, $passPhrase = null)
+    public static function fromFile(string $pemFile, ?string $passPhrase = null): static
     {
         if (! is_readable($pemFile)) {
             throw new Exception\InvalidArgumentException(
@@ -49,11 +45,9 @@ class PrivateKey extends AbstractKey
     /**
      * Constructor
      *
-     * @param  string $pemString
-     * @param  string $passPhrase
      * @throws Exception\RuntimeException
      */
-    public function __construct($pemString, $passPhrase = null)
+    public function __construct(string $pemString, ?string $passPhrase = null)
     {
         $result = openssl_pkey_get_private($pemString, $passPhrase);
         if (false === $result) {
@@ -69,10 +63,8 @@ class PrivateKey extends AbstractKey
 
     /**
      * Get the public key
-     *
-     * @return PublicKey
      */
-    public function getPublicKey()
+    public function getPublicKey(): PublicKey|null
     {
         if ($this->publicKey === null) {
             $this->publicKey = new PublicKey($this->details['key']);
@@ -84,15 +76,12 @@ class PrivateKey extends AbstractKey
     /**
      * Encrypt using this key
      *
-     * @param  string $data
-     * @param  integer $padding
-     * @return string
      * @throws Exception\RuntimeException
      * @throws Exception\InvalidArgumentException
      */
-    public function encrypt($data, $padding = OPENSSL_PKCS1_PADDING)
+    public function encrypt(string $data, int $padding = OPENSSL_PKCS1_PADDING): string
     {
-        if (empty($data)) {
+        if ($data === '' || $data === '0') {
             throw new Exception\InvalidArgumentException('The data to encrypt cannot be empty');
         }
 
@@ -116,13 +105,10 @@ class PrivateKey extends AbstractKey
      *
      * @see http://archiv.infsec.ethz.ch/education/fs08/secsem/bleichenbacher98.pdf
      *
-     * @param  string $data
-     * @param  integer $padding
-     * @return string
      * @throws Exception\RuntimeException
      * @throws Exception\InvalidArgumentException
      */
-    public function decrypt($data, $padding = OPENSSL_PKCS1_OAEP_PADDING)
+    public function decrypt(string $data, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
         if (! is_string($data)) {
             throw new Exception\InvalidArgumentException('The data to decrypt must be a string');
@@ -142,10 +128,7 @@ class PrivateKey extends AbstractKey
         return $decrypted;
     }
 
-    /**
-     * @return string
-     */
-    public function toString()
+    public function toString(): string
     {
         return $this->pemString;
     }

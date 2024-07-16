@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Password;
@@ -14,11 +15,9 @@ class BcryptSha extends Bcrypt
     /**
      * BcryptSha
      *
-     * @param  string $password
      * @throws Exception\RuntimeException
-     * @return string
      */
-    public function create($password)
+    public function create(string $password): string
     {
         return parent::create(Hash::compute('sha256', $password));
     }
@@ -26,12 +25,9 @@ class BcryptSha extends Bcrypt
     /**
      * Verify if a password is correct against a hash value
      *
-     * @param  string $password
-     * @param  string $hash
      * @throws Exception\RuntimeException When the hash is unable to be processed.
-     * @return bool
      */
-    public function verify($password, $hash)
+    public function verify(string $password, string $hash): bool
     {
         return parent::verify(Hash::compute('sha256', $password), $hash);
     }

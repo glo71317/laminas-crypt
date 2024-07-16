@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Symmetric\Padding;
@@ -18,10 +19,10 @@ class Pkcs7 implements PaddingInterface
      * Pad the string to the specified size
      *
      * @param string $string    The string to pad
-     * @param int    $blockSize The size to pad to
+     * @param int $blockSize The size to pad to
      * @return string The padded string
      */
-    public function pad($string, $blockSize = 32)
+    public function pad(string $string, int $blockSize = 32): string
     {
         $pad = $blockSize - (mb_strlen($string, '8bit') % $blockSize);
         return $string . str_repeat(chr($pad), $pad);
@@ -31,9 +32,9 @@ class Pkcs7 implements PaddingInterface
      * Strip the padding from the supplied string
      *
      * @param string $string The string to trim
-     * @return string The unpadded string
+     * @return string|false The unpadded string
      */
-    public function strip($string)
+    public function strip(string $string): string|false
     {
         $end  = mb_substr($string, -1, null, '8bit');
         $last = ord($end);

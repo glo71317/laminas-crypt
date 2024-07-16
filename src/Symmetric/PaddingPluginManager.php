@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Symmetric;
@@ -18,7 +19,7 @@ use function sprintf;
 class PaddingPluginManager implements ContainerInterface
 {
     /** @var array<string, string> */
-    private $paddings = [
+    private array $paddings = [
         'pkcs7'     => Padding\Pkcs7::class,
         'nopadding' => Padding\NoPadding::class,
         'null'      => Padding\NoPadding::class,

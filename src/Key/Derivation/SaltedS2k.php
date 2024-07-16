@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Key\Derivation;
@@ -88,12 +89,11 @@ class SaltedS2k
      *
      * @param  string  $hash       The hash algorithm to be used by HMAC
      * @param  string  $password   The source password/key
-     * @param  int $bytes      The output size in bytes
      * @param  string  $salt       The salt of the algorithm
+     * @param  int $bytes      The output size in bytes
      * @throws Exception\InvalidArgumentException
-     * @return string
      */
-    public static function calc($hash, $password, $salt, $bytes)
+    public static function calc(string $hash, string $password, string $salt, int $bytes): string
     {
         if (! in_array($hash, array_keys(static::$supportedMhashAlgos))) {
             throw new Exception\InvalidArgumentException("The hash algorithm $hash is not supported by " . self::class);
@@ -107,7 +107,7 @@ class SaltedS2k
         foreach (range(0, ceil($bytes / strlen(hash($hash, '', true))) - 1) as $i) {
             $result .= hash(
                 $hash,
-                str_repeat("\0", $i) . str_pad(
+                str_repeat("\0", (int) $i) . str_pad(
                     substr($salt, 0, 8),
                     8,
                     "\0",

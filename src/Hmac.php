@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt;
@@ -21,30 +22,23 @@ class Hmac
 
     /**
      * Last algorithm supported
-     *
-     * @var string|null
      */
-    protected static $lastAlgorithmSupported;
+    protected static ?string $lastAlgorithmSupported = null;
 
     /**
      * Performs a HMAC computation given relevant details such as Key, Hashing
      * algorithm, the data to compute MAC of, and an output format of String,
      * or Binary.
      *
-     * @param  string  $key
-     * @param  string  $hash
-     * @param  string  $data
-     * @param  bool $output
      * @throws Exception\InvalidArgumentException
-     * @return string
      */
-    public static function compute($key, $hash, $data, $output = self::OUTPUT_STRING)
+    public static function compute(string $key, string $hash, string $data, bool $output = self::OUTPUT_STRING): string
     {
-        if (empty($key)) {
+        if ($key === '' || $key === '0') {
             throw new Exception\InvalidArgumentException('Provided key is null or empty');
         }
 
-        if (! $hash || ($hash !== static::$lastAlgorithmSupported && ! static::isSupported($hash))) {
+        if ($hash !== static::$lastAlgorithmSupported && ! static::isSupported($hash)) {
             throw new Exception\InvalidArgumentException(
                 "Hash algorithm is not supported on this PHP installation; provided '{$hash}'"
             );
@@ -55,33 +49,24 @@ class Hmac
 
     /**
      * Get the output size according to the hash algorithm and the output format
-     *
-     * @param  string  $hash
-     * @param  bool $output
-     * @return int
      */
-    public static function getOutputSize($hash, $output = self::OUTPUT_STRING)
+    public static function getOutputSize(string $hash, bool $output = self::OUTPUT_STRING): int
     {
         return mb_strlen(static::compute('key', $hash, 'data', $output), '8bit');
     }
 
     /**
      * Get the supported algorithm
-     *
-     * @return array
      */
-    public static function getSupportedAlgorithms()
+    public static function getSupportedAlgorithms(): array
     {
         return function_exists('hash_hmac_algos') ? hash_hmac_algos() : hash_algos();
     }
 
     /**
      * Is the hash algorithm supported?
-     *
-     * @param  string $algorithm
-     * @return bool
      */
-    public static function isSupported($algorithm)
+    public static function isSupported(string $algorithm): bool
     {
         if ($algorithm === static::$lastAlgorithmSupported) {
             return true;
@@ -99,7 +84,7 @@ class Hmac
     /**
      * Clear the cache of last algorithm supported
      */
-    public static function clearLastAlgorithmCache()
+    public static function clearLastAlgorithmCache(): void
     {
         static::$lastAlgorithmSupported = null;
     }

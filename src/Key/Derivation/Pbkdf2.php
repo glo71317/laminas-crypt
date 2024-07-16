@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Key\Derivation;
@@ -18,15 +19,14 @@ class Pbkdf2
     /**
      * Generate the new key
      *
-     * @param  string  $hash       The hash algorithm to be used by HMAC
-     * @param  string  $password   The source password/key
-     * @param  string  $salt
-     * @param  int $iterations The number of iterations
-     * @param  int $length     The output size
+     * @param string $hash       The hash algorithm to be used by HMAC
+     * @param string $password   The source password/key
+     * @param string $salt       The salt of the algorithm
+     * @param int $iterations The number of iterations
+     * @param int $length     The output size
      * @throws Exception\InvalidArgumentException
-     * @return string
      */
-    public static function calc($hash, $password, $salt, $iterations, $length)
+    public static function calc(string $hash, string $password, string $salt, int $iterations, int $length): string
     {
         if (! Hmac::isSupported($hash)) {
             throw new Exception\InvalidArgumentException("The hash algorithm $hash is not supported by " . self::class);

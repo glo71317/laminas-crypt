@@ -1,87 +1,48 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt\Symmetric;
 
+use Traversable;
+
 interface SymmetricInterface
 {
-    /**
-     * @param string $data
-     */
-    public function encrypt($data);
+    public function encrypt(string $data): string;
 
-    /**
-     * @param string $data
-     */
-    public function decrypt($data);
+    public function decrypt(string $data): string;
 
-    /**
-     * @param string $key
-     */
-    public function setKey($key);
+    public function setKey(string $key): static;
 
     /**
      * @return string
      */
-    public function getKey();
+    public function getKey(): string|null;
 
-    /**
-     * @return integer
-     */
-    public function getKeySize();
+    public function getKeySize(): int;
 
-    /**
-     * @return string
-     */
-    public function getAlgorithm();
+    public function getAlgorithm(): string;
 
-    /**
-     * @param  string $algo
-     */
-    public function setAlgorithm($algo);
+    public function setAlgorithm(string $algo): static;
 
-    /**
-     * @return array
-     */
-    public function getSupportedAlgorithms();
+    public function getSupportedAlgorithms(): array;
 
-    /**
-     * @param string $salt
-     */
-    public function setSalt($salt);
+    public function setSalt(string $salt): static;
 
-    /**
-     * @return string
-     */
-    public function getSalt();
+    public function getSalt(): ?string;
 
-    /**
-     * @return integer
-     */
-    public function getSaltSize();
+    public function getSaltSize(): int|false;
 
-    /**
-     * @return integer
-     */
-    public function getBlockSize();
+    public function getBlockSize(): int;
 
-    /**
-     * @param string $mode
-     */
-    public function setMode($mode);
+    public function setMode(string $mode): static;
 
-    /**
-     * @return string
-     */
-    public function getMode();
+    public function getMode(): string;
 
-    /**
-     * @return array
-     */
-    public function getSupportedModes();
+    public function getSupportedModes(): array;
 
     /**
      * @param array $options
      */
-    public function setOptions($options);
+    public function setOptions(Traversable|array $options);
 }

@@ -1,11 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Laminas\Crypt;
 
+use Laminas\Crypt\BlockCipher;
+use Laminas\Crypt\PublicKey\Rsa;
 use Laminas\Crypt\PublicKey\Rsa\PrivateKey;
 use Laminas\Crypt\PublicKey\Rsa\PublicKey as PubKey;
 use Laminas\Math\Rand;
+use Stringable;
 
 use function array_search;
 use function base64_decode;
@@ -25,30 +29,22 @@ use function sprintf;
  */
 class Hybrid
 {
-    /** @var BlockCipher */
-    protected $bCipher;
-
-    /** @var PublicKey\Rsa */
-    protected $rsa;
+    protected BlockCipher $bCipher;
 
     /**
      * Constructor
      */
-    public function __construct(?BlockCipher $bCipher = null, ?PublicKey\Rsa $rsa = null)
+    public function __construct(?BlockCipher $bCipher = null, protected Rsa $rsa = new Rsa())
     {
         $this->bCipher = $bCipher ?? BlockCipher::factory('openssl');
-        $this->rsa     = $rsa ?? new PublicKey\Rsa();
     }
 
     /**
      * Encrypt using a keyrings
      *
-     * @param string $plaintext
-     * @param array|string $keys
-     * @return string
      * @throws RuntimeException
      */
-    public function encrypt($plaintext, $keys = null)
+    public function encrypt(string $plaintext, array|string|Stringable|null $keys = null): string
     {
         // generate a random session key
         $sessionKey = Rand::getBytes($this->bCipher->getCipher()->getKeySize());
@@ -73,7 +69,7 @@ class Hybrid
             $pubkey   = is_string($pubkey) ? new PubKey($pubkey) : $pubkey;
             $encKeys .= sprintf(
                 "%s:%s:",
-                base64_encode($id),
+                base64_encode((string) $id),
                 base64_encode($this->rsa->encrypt($sessionKey, $pubkey))
             );
         }
@@ -83,15 +79,14 @@ class Hybrid
     /**
      * Decrypt using a private key
      *
-     * @param string $msg
-     * @param string $privateKey
-     * @param string $passPhrase
-     * @param string $id
-     * @return string
      * @throws RuntimeException
      */
-    public function decrypt($msg, $privateKey = null, $passPhrase = null, $id = "")
-    {
+    public function decrypt(
+        string $msg,
+        string|PrivateKey|null $privateKey = null,
+        ?string $passPhrase = null,
+        string $id = ""
+    ): string|false {
         // get the session key
         [$encKeys, $ciphertext] = explode(';', $msg, 2);
 
@@ -116,25 +111,21 @@ class Hybrid
 
         // decrypt the plaintext with the blockcipher algorithm
         $this->bCipher->setKey($sessionKey);
-        return $this->bCipher->decrypt($ciphertext, $sessionKey);
+        return $this->bCipher->decrypt($ciphertext);
     }
 
     /**
      * Get the BlockCipher adapter
-     *
-     * @return BlockCipher
      */
-    public function getBlockCipherInstance()
+    public function getBlockCipherInstance(): BlockCipher
     {
         return $this->bCipher;
     }
 
     /**
      * Get the Rsa instance
-     *
-     * @return Rsa
      */
-    public function getRsaInstance()
+    public function getRsaInstance(): Rsa
     {
         return $this->rsa;
     }
