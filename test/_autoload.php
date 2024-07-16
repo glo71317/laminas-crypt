@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use PHPUnit\Framework\Error\Deprecated;
 use PHPUnit\Framework\Error\Error;
