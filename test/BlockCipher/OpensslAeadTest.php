@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\BlockCipher;
@@ -23,7 +24,7 @@ class OpensslAeadTest extends TestCase
     }
 
     /** @psalm-return array<array-key, array{0: string}> */
-    public function getAuthEncryptionMode(): array
+    public static function getAuthEncryptionMode(): array
     {
         return [
             ['gcm'],
@@ -34,7 +35,7 @@ class OpensslAeadTest extends TestCase
     /**
      * @dataProvider getAuthEncryptionMode
      */
-    public function testEncryptDecrypt(string $mode)
+    public function testEncryptDecrypt(string $mode): void
     {
         $this->blockCipher->getCipher()->setMode($mode);
         $this->blockCipher->setKey('test');

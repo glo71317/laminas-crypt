@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\PublicKey;
@@ -14,7 +15,7 @@ use function base64_decode;
 use function base64_encode;
 use function getenv;
 use function realpath;
-use function strpos;
+use function str_contains;
 
 use const OPENSSL_ALGO_SHA1;
 use const OPENSSL_PKCS1_OAEP_PADDING;
@@ -25,35 +26,25 @@ use const OPENSSL_PKCS1_PADDING;
  */
 class RsaTest extends TestCase
 {
-    /** @var string */
-    protected $testPemString;
+    protected string $testPemString;
 
-    /** @var string */
-    protected $testPemFile;
+    protected string $testPemFile;
 
-    /** @var string */
-    protected $testPemStringPublic;
+    protected string $testPemStringPublic;
 
-    /** @var string */
-    protected $testCertificateString;
+    protected string $testCertificateString;
 
-    /** @var string */
-    protected $testCertificateFile;
+    protected string $testCertificateFile;
 
-    /** @var string */
-    protected $openSslConf;
+    protected string|false $openSslConf;
 
-    /** @var string */
-    protected $userOpenSslConf;
+    protected string $userOpenSslConf;
 
-    /** @var Rsa */
-    protected $rsa;
+    protected Rsa $rsa;
 
-    /** @var Rsa */
-    protected $rsaBase64Out;
+    protected Rsa $rsaBase64Out;
 
-    /** @var  string */
-    protected $privateKey;
+    protected string|PrivateKey|null $privateKey;
 
     public function setUp(): void
     {
@@ -68,9 +59,9 @@ class RsaTest extends TestCase
         $this->openSslConf = $openSslConf;
 
         try {
-            $rsa = new Rsa();
+            new Rsa();
         } catch (Rsa\Exception\RuntimeException $e) {
-            if (strpos($e->getMessage(), 'requires openssl extension') !== false) {
+            if (str_contains($e->getMessage(), 'requires openssl extension')) {
                 $this->markTestSkipped($e->getMessage());
             } else {
                 throw $e;
@@ -97,7 +88,7 @@ zxqlVzz0wy2j4kQVUC4ZRZD80IY+4wIiX2YxKBZKGnd2TtPkcJ/ljkUCAwEAAQ==
 -----END PUBLIC KEY-----
 
 RSAKEY;
-        $this->testCertificateString = <<<CERT
+        $this->testCertificateString = <<<CERT_WRAP
 -----BEGIN CERTIFICATE-----
 MIIC6TCCApOgAwIBAgIBADANBgkqhkiG9w0BAQQFADCBhzELMAkGA1UEBhMCSUUx
 DzANBgNVBAgTBkR1YmxpbjEPMA0GA1UEBxMGRHVibGluMQ4wDAYDVQQKEwVHcm91
@@ -117,7 +108,7 @@ hkiG9w0BAQQFAANBAE4M7ZXJTDLHEFguGaP5g64lbmLmLtYX22ZaNY891FmxhtKm
 l9Nwj3KnPKFdqzJchujP2TLNwSYoQnxgyoMxdho=
 -----END CERTIFICATE-----
 
-CERT;
+CERT_WRAP;
 
         $this->testPemFile = realpath(__DIR__ . '/../_files/test.pem');
 
@@ -139,7 +130,7 @@ CERT;
         $this->rsaBase64Out = new Rsa($rsaOptions);
     }
 
-    public function testFactoryCreatesInstance()
+    public function testFactoryCreatesInstance(): void
     {
         $rsa = Rsa::factory([
             'hash_algorithm'  => 'sha1',
@@ -151,7 +142,7 @@ CERT;
         $this->assertInstanceOf(RsaOptions::class, $rsa->getOptions());
     }
 
-    public function testFactoryCreatesKeys()
+    public function testFactoryCreatesKeys(): void
     {
         $rsa = Rsa::factory([
             'private_key' => $this->testPemString,
@@ -161,7 +152,7 @@ CERT;
         $this->assertInstanceOf(PublicKey::class, $rsa->getOptions()->getPublicKey());
     }
 
-    public function testFactoryCreatesKeysFromFiles()
+    public function testFactoryCreatesKeysFromFiles(): void
     {
         $rsa = Rsa::factory([
             'private_key' => $this->testPemFile,
@@ -170,7 +161,7 @@ CERT;
         $this->assertInstanceOf(PublicKey::class, $rsa->getOptions()->getPublicKey());
     }
 
-    public function testFactoryCreatesJustPublicKey()
+    public function testFactoryCreatesJustPublicKey(): void
     {
         $rsa = Rsa::factory([
             'public_key' => $this->testCertificateString,
@@ -179,7 +170,7 @@ CERT;
         $this->assertNull($rsa->getOptions()->getPrivateKey());
     }
 
-    public function testConstructorCreatesInstanceWithDefaultOptions()
+    public function testConstructorCreatesInstanceWithDefaultOptions(): void
     {
         $rsa = new Rsa();
         $this->assertInstanceOf(Rsa::class, $rsa);
@@ -188,7 +179,7 @@ CERT;
         $this->assertTrue($rsa->getOptions()->getBinaryOutput());
     }
 
-    public function testPrivateKeyInstanceCreation()
+    public function testPrivateKeyInstanceCreation(): void
     {
         $privateKey = Rsa\PrivateKey::fromFile($this->testPemFile);
         $this->assertInstanceOf(PrivateKey::class, $privateKey);
@@ -197,7 +188,7 @@ CERT;
         $this->assertInstanceOf(PrivateKey::class, $privateKey);
     }
 
-    public function testPublicKeyInstanceCreation()
+    public function testPublicKeyInstanceCreation(): void
     {
         $publicKey = new Rsa\PublicKey($this->testPemStringPublic);
         $this->assertInstanceOf(PublicKey::class, $publicKey);
@@ -209,7 +200,7 @@ CERT;
         $this->assertInstanceOf(PublicKey::class, $publicKey);
     }
 
-    public function testSignGeneratesExpectedBinarySignature()
+    public function testSignGeneratesExpectedBinarySignature(): void
     {
         $signature = $this->rsa->sign('1234567890');
         $this->assertEquals(
@@ -218,7 +209,7 @@ CERT;
         );
     }
 
-    public function testSignGeneratesExpectedBinarySignatureUsingExternalKey()
+    public function testSignGeneratesExpectedBinarySignatureUsingExternalKey(): void
     {
         $rsaOptions = new RsaOptions([
             'public_key'    => new Rsa\PublicKey($this->testCertificateString),
@@ -234,7 +225,7 @@ CERT;
         );
     }
 
-    public function testSignGeneratesExpectedBase64Signature()
+    public function testSignGeneratesExpectedBase64Signature(): void
     {
         $signature = $this->rsaBase64Out->sign('1234567890');
         $this->assertEquals(
@@ -243,7 +234,7 @@ CERT;
         );
     }
 
-    public function testVerifyVerifiesBinarySignatures()
+    public function testVerifyVerifiesBinarySignatures(): void
     {
         $signature = $this->rsa->sign('1234567890');
         $result    = $this->rsa->verify('1234567890', $signature);
@@ -251,7 +242,7 @@ CERT;
         $this->assertTrue($result);
     }
 
-    public function testVerifyVerifiesBinarySignaturesUsingCertificate()
+    public function testVerifyVerifiesBinarySignaturesUsingCertificate(): void
     {
         $rsaOptions = new RsaOptions([
             'public_key'    => new Rsa\PublicKey($this->testCertificateString),
@@ -266,7 +257,7 @@ CERT;
         $this->assertTrue($result);
     }
 
-    public function testVerifyVerifiesBase64Signatures()
+    public function testVerifyVerifiesBase64Signatures(): void
     {
         $signature = $this->rsaBase64Out->sign('1234567890');
         $result    = $this->rsaBase64Out->verify('1234567890', $signature);
@@ -274,7 +265,7 @@ CERT;
         $this->assertTrue($result);
     }
 
-    public function testEncryptionWithPublicKey()
+    public function testEncryptionWithPublicKey(): void
     {
         $publicKey  = new Rsa\PublicKey($this->testCertificateString);
         $privateKey = new Rsa\PrivateKey($this->testPemString);
@@ -283,7 +274,7 @@ CERT;
         $this->assertEquals('1234567890', $privateKey->decrypt($encrypted));
     }
 
-    public function testEncryptionWithPrivateKey()
+    public function testEncryptionWithPrivateKey(): void
     {
         $publicKey  = new Rsa\PublicKey($this->testCertificateString);
         $privateKey = new Rsa\PrivateKey($this->testPemString);
@@ -292,14 +283,14 @@ CERT;
         $this->assertEquals('1234567890', $publicKey->decrypt($encrypted));
     }
 
-    public function testEncryptionWithOwnKeys()
+    public function testEncryptionWithOwnKeys(): void
     {
         $encrypted = $this->rsa->encrypt('1234567890');
 
         $this->assertEquals('1234567890', $this->rsa->decrypt($encrypted));
     }
 
-    public function testEncryptionUsingPublicKeyEncryption()
+    public function testEncryptionUsingPublicKeyEncryption(): void
     {
         $encrypted = $this->rsa->encrypt('1234567890', $this->rsa->getOptions()->getPublicKey());
 
@@ -309,7 +300,7 @@ CERT;
         );
     }
 
-    public function testEncryptionUsingPublicKeyBase64Encryption()
+    public function testEncryptionUsingPublicKeyBase64Encryption(): void
     {
         $encrypted = $this->rsaBase64Out->encrypt('1234567890', $this->rsaBase64Out->getOptions()->getPublicKey());
 
@@ -322,7 +313,7 @@ CERT;
         );
     }
 
-    public function testBase64EncryptionUsingCertificatePublicKeyEncryption()
+    public function testBase64EncryptionUsingCertificatePublicKeyEncryption(): void
     {
         $rsa1 = new Rsa(new RsaOptions([
             'public_key'    => new Rsa\PublicKey($this->testCertificateString),
@@ -342,7 +333,7 @@ CERT;
         );
     }
 
-    public function testEncryptionUsingPrivateKeyEncryption()
+    public function testEncryptionUsingPrivateKeyEncryption(): void
     {
         $encrypted = $this->rsa->encrypt('1234567890', $this->rsa->getOptions()->getPrivateKey());
         $decrypted = $this->rsa->decrypt($encrypted, $this->rsa->getOptions()->getPublicKey());
@@ -350,7 +341,7 @@ CERT;
         $this->assertEquals('1234567890', $decrypted);
     }
 
-    public function testEncryptionUsingPrivateKeyBase64Encryption()
+    public function testEncryptionUsingPrivateKeyBase64Encryption(): void
     {
         $encrypted = $this->rsaBase64Out->encrypt('1234567890', $this->rsaBase64Out->getOptions()->getPrivateKey());
         $decrypted = $this->rsaBase64Out->decrypt(
@@ -361,7 +352,7 @@ CERT;
         $this->assertEquals('1234567890', $decrypted);
     }
 
-    public function testKeyGenerationWithDefaults()
+    public function testKeyGenerationWithDefaults(): void
     {
         if (! $this->openSslConf) {
             $this->markTestSkipped('No openssl.cnf found or defined; cannot generate keys');
@@ -374,7 +365,7 @@ CERT;
         $this->assertInstanceOf(PublicKey::class, $rsa->getOptions()->getPublicKey());
     }
 
-    public function testKeyGenerationWithUserOpensslConfig()
+    public function testKeyGenerationWithUserOpensslConfig(): void
     {
         $rsaOptions = new RsaOptions();
         $rsaOptions->generateKeys([
@@ -386,7 +377,7 @@ CERT;
         $this->assertInstanceOf(PublicKey::class, $rsaOptions->getPublicKey());
     }
 
-    public function testKeyGenerationCreatesPassphrasedPrivateKey()
+    public function testKeyGenerationCreatesPassphrasedPrivateKey(): void
     {
         $this->expectException(Exception\RuntimeException::class);
 
@@ -398,13 +389,13 @@ CERT;
             'private_key_bits' => 512,
         ]);
 
-        $rsa = Rsa::factory([
+        Rsa::factory([
             'pass_phrase' => '1234567890',
             'private_key' => $rsaOptions->getPrivateKey()->toString(),
         ]);
     }
 
-    public function testRsaLoadsPassphrasedKeys()
+    public function testRsaLoadsPassphrasedKeys(): void
     {
         $this->expectNotToPerformAssertions();
 
@@ -422,66 +413,66 @@ CERT;
         ]);
     }
 
-    public function testLaminas3492Base64DetectDecrypt()
+    public function testLaminas3492Base64DetectDecrypt(): void
     {
         $data = 'vNKINbWV6qUKGsmawN8ii0mak7PPNoVQPC7fwXJOgMNfCgdT+9W4PUte4fic6U4A6fMra4gv7NCTESxap2qpBQ==';
         $this->rsa->getOptions()->setOpensslPadding(OPENSSL_PKCS1_PADDING);
         $this->assertEquals('1234567890', $this->rsa->decrypt($data));
     }
 
-    public function testLaminas3492Base64DetectVerify()
+    public function testLaminas3492Base64DetectVerify(): void
     {
         $data = 'sMHpp3u6DNecIm5RIkDD3xyKaH6qqP8roUWDs215iOGHehfK1ypqwoETKNP7NaksGS2C1Up813ixlGXkipPVbQ==';
         $this->assertTrue($this->rsa->verify('1234567890', $data));
     }
 
-    public function testDecryptBase64()
+    public function testDecryptBase64(): void
     {
         $data = 'vNKINbWV6qUKGsmawN8ii0mak7PPNoVQPC7fwXJOgMNfCgdT+9W4PUte4fic6U4A6fMra4gv7NCTESxap2qpBQ==';
         $this->rsa->getOptions()->setOpensslPadding(OPENSSL_PKCS1_PADDING);
         $this->assertEquals('1234567890', $this->rsa->decrypt($data, null, Rsa::MODE_BASE64));
     }
 
-    public function testDecryptCorruptBase64()
+    public function testDecryptCorruptBase64(): void
     {
         $data = 'vNKINbWV6qUKGsmawN8ii0mak7PPNoVQPC7fwXJOgMNfCgdT+9W4PUte4fic6U4A6fMra4gv7NCTESxap2qpBQ==';
         $this->expectException(Exception\RuntimeException::class);
         $this->rsa->decrypt(base64_decode($data), null, Rsa::MODE_BASE64);
     }
 
-    public function testDecryptRaw()
+    public function testDecryptRaw(): void
     {
         $data = 'vNKINbWV6qUKGsmawN8ii0mak7PPNoVQPC7fwXJOgMNfCgdT+9W4PUte4fic6U4A6fMra4gv7NCTESxap2qpBQ==';
         $this->rsa->getOptions()->setOpensslPadding(OPENSSL_PKCS1_PADDING);
         $this->assertEquals('1234567890', $this->rsa->decrypt(base64_decode($data), null, Rsa::MODE_RAW));
     }
 
-    public function testDecryptCorruptRaw()
+    public function testDecryptCorruptRaw(): void
     {
         $data = 'vNKINbWV6qUKGsmawN8ii0mak7PPNoVQPC7fwXJOgMNfCgdT+9W4PUte4fic6U4A6fMra4gv7NCTESxap2qpBQ==';
         $this->expectException(Exception\RuntimeException::class);
         $this->rsa->decrypt($data, null, Rsa::MODE_RAW);
     }
 
-    public function testVerifyBase64()
+    public function testVerifyBase64(): void
     {
         $data = 'sMHpp3u6DNecIm5RIkDD3xyKaH6qqP8roUWDs215iOGHehfK1ypqwoETKNP7NaksGS2C1Up813ixlGXkipPVbQ==';
         $this->assertTrue($this->rsa->verify('1234567890', $data, null, Rsa::MODE_BASE64));
     }
 
-    public function testVerifyCorruptBase64()
+    public function testVerifyCorruptBase64(): void
     {
         $data = 'sMHpp3u6DNecIm5RIkDD3xyKaH6qqP8roUWDs215iOGHehfK1ypqwoETKNP7NaksGS2C1Up813ixlGXkipPVbQ==';
         $this->assertFalse($this->rsa->verify('1234567890', base64_decode($data), null, Rsa::MODE_BASE64));
     }
 
-    public function testVerifyRaw()
+    public function testVerifyRaw(): void
     {
         $data = 'sMHpp3u6DNecIm5RIkDD3xyKaH6qqP8roUWDs215iOGHehfK1ypqwoETKNP7NaksGS2C1Up813ixlGXkipPVbQ==';
         $this->assertTrue($this->rsa->verify('1234567890', base64_decode($data), null, Rsa::MODE_RAW));
     }
 
-    public function testVerifyCorruptRaw()
+    public function testVerifyCorruptRaw(): void
     {
         $data = 'sMHpp3u6DNecIm5RIkDD3xyKaH6qqP8roUWDs215iOGHehfK1ypqwoETKNP7NaksGS2C1Up813ixlGXkipPVbQ==';
         $this->assertFalse($this->rsa->verify('1234567890', $data, null, Rsa::MODE_RAW));

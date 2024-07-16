@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\Key\Derivation;
@@ -22,14 +23,14 @@ class Pbkdf2Test extends TestCase
         $this->salt = '12345678901234567890123456789012';
     }
 
-    public function testCalc()
+    public function testCalc(): void
     {
         $password = Pbkdf2::calc('sha256', 'test', $this->salt, 5000, 32);
         $this->assertEquals(32, strlen($password));
         $this->assertEquals('JVNgHc1AeBl/S9H6Jo2tUUi838snakDBMcsNJP0+0O0=', base64_encode($password));
     }
 
-    public function testCalcWithWrongHash()
+    public function testCalcWithWrongHash(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
@@ -69,8 +70,14 @@ class Pbkdf2Test extends TestCase
     /**
      * @dataProvider provideTestVectors
      */
-    public function testRFC670(string $hash, string $password, string $salt, int $cycles, int $length, string $expect)
-    {
+    public function testRFC670(
+        string $hash,
+        string $password,
+        string $salt,
+        int $cycles,
+        int $length,
+        string $expect
+    ): void {
         $result = Pbkdf2::calc($hash, $password, $salt, $cycles, $length);
         $this->assertEquals($expect, bin2hex($result));
     }

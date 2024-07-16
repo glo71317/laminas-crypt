@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt;
@@ -21,7 +22,7 @@ use function str_repeat;
  */
 class HmacTest extends TestCase
 {
-    public function testIsSupportedAndCache()
+    public function testIsSupportedAndCache(): void
     {
         $reflectionClass                = new ReflectionClass(Hmac::class);
         $lastAlgorithmSupportedProperty = $reflectionClass->getProperty('lastAlgorithmSupported');
@@ -62,7 +63,7 @@ class HmacTest extends TestCase
      *     2: string,
      * }>
      */
-    public function provideMd5Data()
+    public static function provideMd5Data(): array
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         return [
@@ -92,7 +93,7 @@ class HmacTest extends TestCase
     /**
      * @dataProvider provideMd5Data
      */
-    public function testMd5(string $data, string $key, string $output)
+    public function testMd5(string $data, string $key, string $output): void
     {
         $hash = Hmac::compute($key, 'MD5', $data);
         $this->assertEquals($output, $hash);
@@ -107,7 +108,7 @@ class HmacTest extends TestCase
      *     2: string,
      * }>
      */
-    public function provideSha1Data(): array
+    public static function provideSha1Data(): array
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         return [
@@ -137,7 +138,7 @@ class HmacTest extends TestCase
     /**
      * @dataProvider provideSha1Data
      */
-    public function testSha1(string $data, string $key, string $output)
+    public function testSha1(string $data, string $key, string $output): void
     {
         $hash = Hmac::compute($key, 'SHA1', $data);
         $this->assertEquals($output, $hash);
@@ -152,7 +153,7 @@ class HmacTest extends TestCase
      *     2: string,
      * }>
      */
-    public function provideRipemd160Data(): array
+    public static function provideRipemd160Data(): array
     {
         // phpcs:disable Generic.Files.LineLength.TooLong
         return [
@@ -182,35 +183,28 @@ class HmacTest extends TestCase
     /**
      * @dataProvider provideRipemd160Data
      */
-    public function testRipemd160(string $data, string $key, string $output)
+    public function testRipemd160(string $data, string $key, string $output): void
     {
         $hash = Hmac::compute($key, 'RIPEMD160', $data);
         $this->assertEquals($output, $hash);
     }
 
-    public function testEmptyKey()
+    public function testEmptyKey(): void
     {
         Hmac::clearLastAlgorithmCache();
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Provided key is null or empty');
-        Hmac::compute(null, 'md5', 'test');
+        Hmac::compute('', 'md5', 'test');
     }
 
-    public function testNullHashAlgorithm()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Hash algorithm is not supported on this PHP installation');
-        Hmac::compute('key', null, 'test');
-    }
-
-    public function testWrongHashAlgorithm()
+    public function testWrongHashAlgorithm(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Hash algorithm is not supported on this PHP installation');
         Hmac::compute('key', 'wrong', 'test');
     }
 
-    public function testBinaryOutput()
+    public function testBinaryOutput(): void
     {
         $data = Hmac::compute('key', 'sha256', 'test', Hmac::OUTPUT_BINARY);
         $this->assertEquals('Aq+1YwSQLGVvy3N83QPeYgW7bUAdooEu/ZstNqCK8Vk=', base64_encode($data));

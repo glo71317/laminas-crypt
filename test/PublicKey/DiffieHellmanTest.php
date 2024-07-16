@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\PublicKey;
@@ -10,7 +11,7 @@ use Laminas\Math\Exception\RuntimeException as MathException;
 use PHPUnit\Framework\TestCase;
 
 use function hex2bin;
-use function strpos;
+use function str_contains;
 
 /**
  * @group      Laminas_Crypt
@@ -22,7 +23,7 @@ class DiffieHellmanTest extends TestCase
         try {
             BigInteger\BigInteger::factory();
         } catch (MathException $e) {
-            if (strpos($e->getMessage(), 'math support is not detected') !== false) {
+            if (str_contains($e->getMessage(), 'math support is not detected')) {
                 $this->markTestSkipped($e->getMessage());
             } else {
                 throw $e;
@@ -30,7 +31,7 @@ class DiffieHellmanTest extends TestCase
         }
     }
 
-    public function testWithSpec()
+    public function testWithSpec(): void
     {
         $aliceOptions = [
             'prime'     => '563',
@@ -61,7 +62,7 @@ class DiffieHellmanTest extends TestCase
         $this->assertEquals('117', $bobSecretKey);
     }
 
-    public function testWithBinaryFormsAndLargeIntegers()
+    public function testWithBinaryFormsAndLargeIntegers(): void
     {
         // @codingStandardsIgnoreStart
         $aliceOptions = [
@@ -115,7 +116,7 @@ class DiffieHellmanTest extends TestCase
         // @codingStandardsIgnoreEnd
     }
 
-    public function testWithBinaryFormsAndLargeIntegersAndOpensslWithoutPrivateKey()
+    public function testWithBinaryFormsAndLargeIntegersAndOpensslWithoutPrivateKey(): void
     {
         // @codingStandardsIgnoreStart
         // skip this test if openssl DH support is not available
@@ -162,20 +163,20 @@ class DiffieHellmanTest extends TestCase
         // @codingStandardsIgnoreEnd
     }
 
-    public function testGenerateKeysWithUnsetPrivateKey()
+    public function testGenerateKeysWithUnsetPrivateKey(): void
     {
         $dh = new DiffieHellman(
             // This number was derived from a prime found in the PHP manual
             // phpcs:ignore Generic.Files.LineLength.TooLong
             '20595147743956561473635506785364689242608156641683669610631810376381034689091062076699156642251004392108952858143484774920291169240754614150220808705672513182725720799259477027420213618077724812926858890986423862521124832721602613093351849581066146191024215917126835618245457407314890365423196085851324526812966877725950802151696434289308856332532106388538037192731883124146318902069590087059811604115285813365981576703499840166093799061116445367741724816239106013192273120668831654534518856490326103748487603609919471960894332833324295672569077878683980560262697833730582706235817119832357244970862344795976907973227',
-            2
+            '2'
         );
         $dh->generateKeys();
         $privateKey = $dh->getPrivateKey();
         $this->assertNotNull($privateKey);
     }
 
-    public function testInitMathBeforeAnyConversion()
+    public function testInitMathBeforeAnyConversion(): void
     {
         $this->expectNotToPerformAssertions();
 
@@ -184,51 +185,51 @@ class DiffieHellmanTest extends TestCase
         new DiffieHellman('563', '5', hex2bin('09'), DiffieHellman::FORMAT_BINARY);
     }
 
-    public function testGetPublicKeyWithoutGenerated()
+    public function testGetPublicKeyWithoutGenerated(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
         $dh->getPublicKey();
     }
 
-    public function testSetWrongPublicKey()
+    public function testSetWrongPublicKey(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
-        $dh->setPublicKey(-2);
+        $dh->setPublicKey('-2');
     }
 
-    public function testGetSharedSecretKeyWihoutCompute()
+    public function testGetSharedSecretKeyWihoutCompute(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
         $dh->getSharedSecretKey();
     }
 
-    public function testSetWrongPrime()
+    public function testSetWrongPrime(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
-        $dh->setPrime(-2);
+        $dh->setPrime('-2');
     }
 
-    public function testSetWrongGenerator()
+    public function testSetWrongGenerator(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
-        $dh->setGenerator(-2);
+        $dh->setGenerator('-2');
     }
 
-    public function testSetWrongPrivateKey()
+    public function testSetWrongPrivateKey(): void
     {
-        $dh = new DiffieHellman(563, 5);
+        $dh = new DiffieHellman('563', '5');
 
         $this->expectException(Exception\InvalidArgumentException::class);
-        $dh->setPrivateKey(-2);
+        $dh->setPrivateKey('-2');
     }
 }

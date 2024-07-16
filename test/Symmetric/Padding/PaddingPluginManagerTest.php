@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\Symmetric\Padding;
@@ -12,7 +13,7 @@ use Psr\Container\ContainerInterface;
 class PaddingPluginManagerTest extends TestCase
 {
     /** @psalm-return array<array-key, array{0: string}> */
-    public function getPaddings(): array
+    public static function getPaddings(): array
     {
         return [
             ['pkcs7'],
@@ -21,7 +22,7 @@ class PaddingPluginManagerTest extends TestCase
         ];
     }
 
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $plugin = new PaddingPluginManager();
         $this->assertInstanceOf(ContainerInterface::class, $plugin);
@@ -30,7 +31,7 @@ class PaddingPluginManagerTest extends TestCase
     /**
      * @dataProvider getPaddings
      */
-    public function testHas(string $padding)
+    public function testHas(string $padding): void
     {
         $plugin = new PaddingPluginManager();
         $this->assertTrue($plugin->has($padding));
@@ -39,13 +40,13 @@ class PaddingPluginManagerTest extends TestCase
     /**
      * @dataProvider getPaddings
      */
-    public function testGet(string $padding)
+    public function testGet(string $padding): void
     {
         $plugin = new PaddingPluginManager();
         $this->assertInstanceOf(PaddingInterface::class, $plugin->get($padding));
     }
 
-    public function testGetError()
+    public function testGetError(): void
     {
         $plugin = new PaddingPluginManager();
 

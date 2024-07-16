@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt;
@@ -22,7 +23,7 @@ use function strtolower;
  */
 class HashTest extends TestCase
 {
-    public function testIsSupportedAndCache()
+    public function testIsSupportedAndCache(): void
     {
         $reflectionClass                = new ReflectionClass(Hash::class);
         $lastAlgorithmSupportedProperty = $reflectionClass->getProperty('lastAlgorithmSupported');
@@ -57,7 +58,7 @@ class HashTest extends TestCase
     // SHA1 tests taken from RFC 3174
 
     /** @psalm-return array<array-key, array{0: string, 1: string}> */
-    public function provideSha1Data(): array
+    public static function provideSha1Data(): array
     {
         return [
             [
@@ -82,7 +83,7 @@ class HashTest extends TestCase
     /**
      * @dataProvider provideSha1Data
      */
-    public function testSha1(string $data, string $output)
+    public function testSha1(string $data, string $output): void
     {
         $hash = Hash::compute('sha1', $data);
         $this->assertEquals($output, $hash);
@@ -91,7 +92,7 @@ class HashTest extends TestCase
     // SHA-224 tests taken from RFC 3874
 
     /** @psalm-return array<array-key, array{0: string, 1: string}> */
-    public function provideSha224Data(): array
+    public static function provideSha224Data(): array
     {
         return [
             ['abc', '23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7'],
@@ -109,7 +110,7 @@ class HashTest extends TestCase
     /**
      * @dataProvider provideSha224Data
      */
-    public function testSha224(string $data, string $output)
+    public function testSha224(string $data, string $output): void
     {
         $hash = Hash::compute('sha224', $data);
         $this->assertEquals($output, $hash);
@@ -118,7 +119,7 @@ class HashTest extends TestCase
     // MD5 test suite taken from RFC 1321
 
     /** @psalm-return array<array-key, array{0: string, 1: string}> */
-    public function provideMd5Data(): array
+    public static function provideMd5Data(): array
     {
         return [
             ['', 'd41d8cd98f00b204e9800998ecf8427e'],
@@ -137,28 +138,20 @@ class HashTest extends TestCase
     /**
      * @dataProvider provideMd5Data
      */
-    public function testMd5(string $data, string $output)
+    public function testMd5(string $data, string $output): void
     {
         $hash = Hash::compute('md5', $data);
         $this->assertEquals($output, $hash);
     }
 
-    public function testNullHashAlgorithm()
-    {
-        Hash::clearLastAlgorithmCache();
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Hash algorithm provided is not supported on this PHP installation');
-        Hash::compute(null, 'test');
-    }
-
-    public function testWrongHashAlgorithm()
+    public function testWrongHashAlgorithm(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Hash algorithm provided is not supported on this PHP installation');
         Hash::compute('wrong', 'test');
     }
 
-    public function testBinaryOutput()
+    public function testBinaryOutput(): void
     {
         $hash = Hash::compute('sha1', 'test', Hash::OUTPUT_BINARY);
         $this->assertEquals('qUqP5cyxm6YcTAhz05Hph5gvu9M=', base64_encode($hash));

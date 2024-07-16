@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\FileCipher;
@@ -8,7 +9,7 @@ use Laminas\Crypt\Symmetric;
 use Laminas\Crypt\Symmetric\Openssl;
 use Laminas\Crypt\Symmetric\SymmetricInterface;
 
-class OpensslTest extends AbstractFileCipherTest
+class OpensslTestcase extends AbstractFileCipherTestcase
 {
     public function setUp(): void
     {
@@ -20,13 +21,13 @@ class OpensslTest extends AbstractFileCipherTest
         parent::setUp();
     }
 
-    public function testDefaultCipher()
+    public function testDefaultCipher(): void
     {
         $fileCipher = new FileCipher();
         $this->assertInstanceOf(Openssl::class, $fileCipher->getCipher());
     }
 
-    public function testSetCipher()
+    public function testSetCipher(): void
     {
         $cipher = new Openssl([
             'algo' => 'aes',

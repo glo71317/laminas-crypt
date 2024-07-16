@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace LaminasTest\Crypt\Symmetric;
@@ -11,6 +12,7 @@ use Laminas\Math\Rand;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
+use TypeError;
 
 use function file_get_contents;
 use function in_array;
@@ -25,7 +27,7 @@ use const OPENSSL_VERSION_TEXT;
 /**
  * @group      Laminas_Crypt
  */
-abstract class AbstractTest extends TestCase
+abstract class AbstractTestcase extends TestCase
 {
     /** @var string */
     protected $adapterClass = '';
@@ -53,7 +55,7 @@ abstract class AbstractTest extends TestCase
     {
         try {
             $this->crypt = new $this->adapterClass();
-        } catch (Exception\RuntimeException $e) {
+        } catch (Exception\RuntimeException) {
             $this->markTestSkipped(
                 sprintf("%s is not installed, I cannot execute %s", $this->adapterClass, static::class)
             );
@@ -61,7 +63,7 @@ abstract class AbstractTest extends TestCase
         $this->plaintext = file_get_contents(__DIR__ . '/../_files/plaintext');
     }
 
-    public function testConstructByParams()
+    public function testConstructByParams(): void
     {
         $key     = $this->generateKey();
         $iv      = $this->generateSalt();
@@ -76,7 +78,7 @@ abstract class AbstractTest extends TestCase
         $this->assertEquals($crypt->getAlgorithm(), $options['algorithm']);
         $this->assertEquals($crypt->getMode(), $options['mode']);
         $this->assertEquals($crypt->getKey(), mb_substr($key, 0, $crypt->getKeySize(), '8bit'));
-        $this->assertEquals($crypt->getSalt(), mb_substr($iv, 0, $crypt->getSaltSize(), '8bit'));
+        $this->assertEquals($crypt->getSalt(), mb_substr((string) $iv, 0, $crypt->getSaltSize(), '8bit'));
         $this->assertInstanceOf(PKCS7::class, $crypt->getPadding());
     }
 
@@ -84,7 +86,7 @@ abstract class AbstractTest extends TestCase
      * This test uses ArrayObject to simulate a Laminas\Config\Config instance;
      * the class itself only tests for Traversable.
      */
-    public function testConstructByConfig()
+    public function testConstructByConfig(): void
     {
         $key     = $this->generateKey();
         $iv      = $this->generateSalt();
@@ -100,25 +102,25 @@ abstract class AbstractTest extends TestCase
         $this->assertEquals($crypt->getAlgorithm(), $options['algorithm']);
         $this->assertEquals($crypt->getMode(), $options['mode']);
         $this->assertEquals($crypt->getKey(), mb_substr($key, 0, $crypt->getKeySize(), '8bit'));
-        $this->assertEquals($crypt->getSalt(), mb_substr($iv, 0, $crypt->getSaltSize(), '8bit'));
+        $this->assertEquals($crypt->getSalt(), mb_substr((string) $iv, 0, $crypt->getSaltSize(), '8bit'));
         $this->assertInstanceOf(PKCS7::class, $crypt->getPadding());
     }
 
-    public function testConstructWrongParam()
+    public function testConstructWrongParam(): void
     {
         $options = 'test';
-        $this->expectException(Exception\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The options parameter must be an array or a Traversable');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('($options) must be of type Traversable|array, string given');
         new $this->adapterClass($options);
     }
 
-    public function testSetAlgorithm()
+    public function testSetAlgorithm(): void
     {
         $this->crypt->setAlgorithm($this->defaultAlgo);
         $this->assertEquals($this->crypt->getAlgorithm(), $this->defaultAlgo);
     }
 
-    public function testSetWrongAlgorithm()
+    public function testSetWrongAlgorithm(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
@@ -128,7 +130,7 @@ abstract class AbstractTest extends TestCase
         $this->crypt->setAlgorithm('test');
     }
 
-    public function testSetKey()
+    public function testSetKey(): void
     {
         $key    = $this->generateKey();
         $result = $this->crypt->setKey($key);
@@ -137,19 +139,19 @@ abstract class AbstractTest extends TestCase
         $this->assertEquals($key, $this->crypt->getKey());
     }
 
-    public function testSetEmptyKey()
+    public function testSetEmptyKey(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('The key cannot be empty');
         $this->crypt->setKey('');
     }
 
-    public function testSetShortKey()
+    public function testSetShortKey(): void
     {
         foreach ($this->crypt->getSupportedAlgorithms() as $algo) {
             $this->crypt->setAlgorithm($algo);
             try {
-                $result = $this->crypt->setKey('four');
+                $this->crypt->setKey('four');
             } catch (\Exception $ex) {
                 $this->assertInstanceOf(
                     Exception\InvalidArgumentException::class,
@@ -159,7 +161,7 @@ abstract class AbstractTest extends TestCase
         }
     }
 
-    public function testSetSalt()
+    public function testSetSalt(): void
     {
         $iv = $this->generateSalt() . $this->generateSalt();
         $this->crypt->setSalt($iv);
@@ -170,19 +172,19 @@ abstract class AbstractTest extends TestCase
         $this->assertEquals($iv, $this->crypt->getOriginalSalt());
     }
 
-    public function testShortSalt()
+    public function testShortSalt(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->crypt->setSalt('short');
     }
 
-    public function testSetMode()
+    public function testSetMode(): void
     {
         $this->crypt->setMode($this->defaultMode);
         $this->assertEquals($this->defaultMode, $this->crypt->getMode());
     }
 
-    public function testSetWrongMode()
+    public function testSetWrongMode(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
@@ -192,7 +194,7 @@ abstract class AbstractTest extends TestCase
         $this->crypt->setMode('xxx');
     }
 
-    public function testEncryptDecrypt()
+    public function testEncryptDecrypt(): void
     {
         $this->crypt->setPadding(new PKCS7());
         foreach ($this->crypt->getSupportedAlgorithms() as $algo) {
@@ -208,7 +210,7 @@ abstract class AbstractTest extends TestCase
                 $this->crypt->setAlgorithm($algo);
                 try {
                     $this->crypt->setMode($mode);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     // Continue if the encryption mode is not supported for the algorithm
                     continue;
                 }
@@ -227,20 +229,20 @@ abstract class AbstractTest extends TestCase
         }
     }
 
-    public function testEncryptWithoutKey()
+    public function testEncryptWithoutKey(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->crypt->encrypt('test');
     }
 
-    public function testEncryptEmptyData()
+    public function testEncryptEmptyData(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('The data to encrypt cannot be empty');
         $this->crypt->encrypt('');
     }
 
-    public function testEncryptWithoutSalt()
+    public function testEncryptWithoutSalt(): void
     {
         $this->crypt->setKey($this->generateKey());
         $this->expectException(Exception\InvalidArgumentException::class);
@@ -248,20 +250,20 @@ abstract class AbstractTest extends TestCase
         $this->crypt->encrypt($this->plaintext);
     }
 
-    public function testDecryptEmptyData()
+    public function testDecryptEmptyData(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('The data to decrypt cannot be empty');
         $this->crypt->decrypt('');
     }
 
-    public function testDecryptWithoutKey()
+    public function testDecryptWithoutKey(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->crypt->decrypt($this->plaintext);
     }
 
-    public function testSetOptions()
+    public function testSetOptions(): void
     {
         $options = [
             'algo' => $this->defaultAlgo,
@@ -284,7 +286,7 @@ abstract class AbstractTest extends TestCase
         $this->assertInstanceOf(NoPadding::class, $this->crypt->getPadding());
     }
 
-    public function testSetPaddingPluginManager()
+    public function testSetPaddingPluginManager(): void
     {
         $this->crypt->setPaddingPluginManager(
             $this->getMockBuilder(ContainerInterface::class)->getMock()
@@ -292,13 +294,13 @@ abstract class AbstractTest extends TestCase
         $this->assertInstanceOf(ContainerInterface::class, $this->crypt->getPaddingPluginManager());
     }
 
-    public function testSetWrongPaddingPluginManager()
+    public function testSetWrongPaddingPluginManager(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->crypt->setPaddingPluginManager(stdClass::class);
     }
 
-    public function testSetNotExistingPaddingPluginManager()
+    public function testSetNotExistingPaddingPluginManager(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->crypt->setPaddingPluginManager('Foo');
