@@ -14,7 +14,7 @@ use function sprintf;
  * Padding\PaddingInterface. Additionally, it registers a number of default
  * padding adapters available.
  */
-class PaddingPluginManager implements ContainerInterface
+final class PaddingPluginManager implements ContainerInterface
 {
     /** @var array<string, string> */
     private $paddings = [
@@ -25,11 +25,8 @@ class PaddingPluginManager implements ContainerInterface
 
     /**
      * Do we have the padding plugin?
-     *
-     * @param  string $id
-     * @return bool
      */
-    public function has($id)
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->paddings);
     }
@@ -37,10 +34,9 @@ class PaddingPluginManager implements ContainerInterface
     /**
      * Retrieve the padding plugin
      *
-     * @param  string $id
      * @return Padding\PaddingInterface
      */
-    public function get($id)
+    public function get(string $id)
     {
         if (! $this->has($id)) {
             throw new Exception\NotFoundException(sprintf(
