@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laminas\Crypt\Password;
 
-use Laminas\Math\Rand;
 use Laminas\Stdlib\ArrayUtils;
 use Traversable;
 
 use function is_array;
-use function mb_strlen;
 use function microtime;
 use function password_hash;
 use function password_verify;
 use function sprintf;
 use function strtolower;
-use function trigger_error;
 
-use const E_USER_DEPRECATED;
 use const PASSWORD_BCRYPT;
-use const PHP_VERSION_ID;
 
 /**
  * Bcrypt algorithm using crypt() function of PHP
@@ -26,19 +23,16 @@ class Bcrypt implements PasswordInterface
 {
     public const MIN_SALT_SIZE = 22;
 
-    /** @var string */
-    protected $cost = '10';
+    protected string $cost = '10';
 
-    /** @var string */
-    protected $salt;
+    protected string $salt;
 
     /**
      * Constructor
      *
-     * @param array|Traversable $options
      * @throws Exception\InvalidArgumentException
      */
-    public function __construct($options = [])
+    public function __construct(Traversable|array $options = [])
     {
         if (! empty($options)) {
             if ($options instanceof Traversable) {
@@ -67,28 +61,18 @@ class Bcrypt implements PasswordInterface
     /**
      * Bcrypt
      *
-     * @param  string $password
      * @throws Exception\RuntimeException
-     * @return string
      */
-    public function create($password)
+    public function create(string $password): string
     {
         $options = ['cost' => (int) $this->cost];
-        if (PHP_VERSION_ID < 70000) { // salt is deprecated from PHP 7.0
-            $salt            = $this->salt ?: Rand::getBytes(self::MIN_SALT_SIZE);
-            $options['salt'] = $salt;
-        }
         return password_hash($password, PASSWORD_BCRYPT, $options);
     }
 
     /**
      * Verify if a password is correct against a hash value
-     *
-     * @param  string $password
-     * @param  string $hash
-     * @return bool
      */
-    public function verify($password, $hash)
+    public function verify(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
     }
@@ -96,13 +80,11 @@ class Bcrypt implements PasswordInterface
     /**
      * Set the cost parameter
      *
-     * @param  int|string $cost
      * @throws Exception\InvalidArgumentException
-     * @return Bcrypt Provides a fluent interface
      */
-    public function setCost($cost)
+    public function setCost(int|string $cost): static
     {
-        if (! empty($cost)) {
+        if ($cost !== 0 && ($cost !== '' && $cost !== '0')) {
             $cost = (int) $cost;
             if ($cost < 4 || $cost > 31) {
                 throw new Exception\InvalidArgumentException(
@@ -116,49 +98,10 @@ class Bcrypt implements PasswordInterface
 
     /**
      * Get the cost parameter
-     *
-     * @return string
      */
-    public function getCost()
+    public function getCost(): string
     {
         return $this->cost;
-    }
-
-    /**
-     * Set the salt value
-     *
-     * @param  string $salt
-     * @throws Exception\InvalidArgumentException
-     * @return Bcrypt Provides a fluent interface
-     */
-    public function setSalt($salt)
-    {
-        if (PHP_VERSION_ID >= 70000) {
-            trigger_error('Salt support is deprecated starting with PHP 7.0.0', E_USER_DEPRECATED);
-        }
-
-        if (mb_strlen($salt, '8bit') < self::MIN_SALT_SIZE) {
-            throw new Exception\InvalidArgumentException(
-                'The length of the salt must be at least ' . self::MIN_SALT_SIZE . ' bytes'
-            );
-        }
-
-        $this->salt = $salt;
-        return $this;
-    }
-
-    /**
-     * Get the salt value
-     *
-     * @return string
-     */
-    public function getSalt()
-    {
-        if (PHP_VERSION_ID >= 70000) {
-            trigger_error('Salt support is deprecated starting with PHP 7.0.0', E_USER_DEPRECATED);
-        }
-
-        return $this->salt;
     }
 
     /**
@@ -174,7 +117,7 @@ class Bcrypt implements PasswordInterface
      * @param float $timeTarget Defaults to 50ms (0.05)
      * @return int Maximum cost value that falls within the time to target.
      */
-    public function benchmarkCost($timeTarget = 0.05)
+    public function benchmarkCost(float $timeTarget = 0.05): int
     {
         $cost = 8;
 

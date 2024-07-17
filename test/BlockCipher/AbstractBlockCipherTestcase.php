@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\BlockCipher;
 
 use Exception as GlobalException;
@@ -10,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 use function file_get_contents;
-use function get_class;
 use function in_array;
 use function preg_match;
 use function sprintf;
@@ -19,7 +20,7 @@ use function substr;
 
 use const OPENSSL_VERSION_TEXT;
 
-abstract class AbstractBlockCipherTest extends TestCase
+abstract class AbstractBlockCipherTestcase extends TestCase
 {
     /** @var Symmetric\SymmetricInterface */
     protected $cipher;
@@ -50,20 +51,20 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->plaintext   = file_get_contents(__DIR__ . '/../_files/plaintext');
     }
 
-    public function testSetKey()
+    public function testSetKey(): void
     {
         $result = $this->blockCipher->setKey('test');
         $this->assertEquals($result, $this->blockCipher);
         $this->assertEquals('test', $this->blockCipher->getKey());
     }
 
-    public function testSetEmptyKey()
+    public function testSetEmptyKey(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setKey('');
     }
 
-    public function testSetSalt()
+    public function testSetSalt(): void
     {
         $salt   = str_repeat('a', $this->blockCipher->getCipher()->getSaltSize() + 2);
         $result = $this->blockCipher->setSalt($salt);
@@ -75,63 +76,63 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->assertEquals($salt, $this->blockCipher->getOriginalSalt());
     }
 
-    public function testSetWrongSalt()
+    public function testSetWrongSalt(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setSalt('x');
     }
 
-    public function testSetAlgorithm()
+    public function testSetAlgorithm(): void
     {
         $result = $this->blockCipher->setCipherAlgorithm('aes');
         $this->assertEquals($result, $this->blockCipher);
         $this->assertEquals('aes', $this->blockCipher->getCipherAlgorithm());
     }
 
-    public function testSetAlgorithmFail()
+    public function testSetAlgorithmFail(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage(sprintf(
             'The algorithm unknown is not supported by %s',
-            get_class($this->cipher)
+            $this->cipher::class
         ));
-        $result = $this->blockCipher->setCipherAlgorithm('unknown');
+        $this->blockCipher->setCipherAlgorithm('unknown');
     }
 
-    public function testSetHashAlgorithm()
+    public function testSetHashAlgorithm(): void
     {
         $result = $this->blockCipher->setHashAlgorithm('sha1');
         $this->assertEquals($result, $this->blockCipher);
         $this->assertEquals('sha1', $this->blockCipher->getHashAlgorithm());
     }
 
-    public function testSetUnsupportedHashAlgorithm()
+    public function testSetUnsupportedHashAlgorithm(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setHashAlgorithm('foo');
     }
 
-    public function testSetPbkdf2HashAlgorithm()
+    public function testSetPbkdf2HashAlgorithm(): void
     {
         $result = $this->blockCipher->setPbkdf2HashAlgorithm('sha1');
         $this->assertEquals($result, $this->blockCipher);
         $this->assertEquals('sha1', $this->blockCipher->getPbkdf2HashAlgorithm());
     }
 
-    public function testSetUnsupportedPbkdf2HashAlgorithm()
+    public function testSetUnsupportedPbkdf2HashAlgorithm(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setPbkdf2HashAlgorithm('foo');
     }
 
-    public function testSetKeyIteration()
+    public function testSetKeyIteration(): void
     {
         $result = $this->blockCipher->setKeyIteration(1000);
         $this->assertEquals($result, $this->blockCipher);
         $this->assertEquals(1000, $this->blockCipher->getKeyIteration());
     }
 
-    public function testEncryptWithoutData()
+    public function testEncryptWithoutData(): void
     {
         $plaintext = '';
         $this->expectException(Exception\InvalidArgumentException::class);
@@ -139,7 +140,7 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->blockCipher->encrypt($plaintext);
     }
 
-    public function testEncryptErrorKey()
+    public function testEncryptErrorKey(): void
     {
         $plaintext = 'test';
         $this->expectException(Exception\InvalidArgumentException::class);
@@ -147,7 +148,7 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->blockCipher->encrypt($plaintext);
     }
 
-    public function testEncryptDecrypt()
+    public function testEncryptDecrypt(): void
     {
         $this->blockCipher->setKey('test');
         $this->blockCipher->setKeyIteration(1000);
@@ -176,7 +177,7 @@ abstract class AbstractBlockCipherTest extends TestCase
         }
     }
 
-    public function testEncryptDecryptUsingBinary()
+    public function testEncryptDecryptUsingBinary(): void
     {
         $this->blockCipher->setKey('test');
         $this->blockCipher->setKeyIteration(1000);
@@ -209,10 +210,9 @@ abstract class AbstractBlockCipherTest extends TestCase
     }
 
     /** @psalm-return array<string, array{0: int|float|string}> */
-    public function zeroValuesProvider(): array
+    public static function zeroValuesProvider(): array
     {
         return [
-            '"0"'   => [0],
             '"0.0"' => [0.0],
             '"0"'   => ['0'],
         ];
@@ -220,9 +220,8 @@ abstract class AbstractBlockCipherTest extends TestCase
 
     /**
      * @dataProvider zeroValuesProvider
-     * @param int|float|string $value
      */
-    public function testEncryptDecryptUsingZero($value)
+    public function testEncryptDecryptUsingZero(int|float|string $value): void
     {
         $this->blockCipher->setKey('test');
         $this->blockCipher->setKeyIteration(1000);
@@ -238,7 +237,7 @@ abstract class AbstractBlockCipherTest extends TestCase
             $this->blockCipher->setCipherAlgorithm($algo);
 
             try {
-                $encrypted = $this->blockCipher->encrypt($value);
+                $encrypted = $this->blockCipher->encrypt((string) $value);
             } catch (GlobalException $e) {
                 $this->fail(sprintf('Failed encryption using %s: %s', $algo, $e->getMessage()));
             }
@@ -252,25 +251,19 @@ abstract class AbstractBlockCipherTest extends TestCase
         }
     }
 
-    public function testDecryptNotString()
-    {
-        $this->expectException(Exception\InvalidArgumentException::class);
-        $this->blockCipher->decrypt(['foo']);
-    }
-
-    public function testDecryptEmptyString()
+    public function testDecryptEmptyString(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->decrypt('');
     }
 
-    public function testDecyptWihoutKey()
+    public function testDecyptWihoutKey(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->decrypt('encrypted data');
     }
 
-    public function testDecryptAuthFail()
+    public function testDecryptAuthFail(): void
     {
         $this->blockCipher->setKey('test');
         $this->blockCipher->setKeyIteration(1000);
@@ -282,7 +275,7 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->assertFalse($decrypted);
     }
 
-    public function testSetSymmetricPluginManager()
+    public function testSetSymmetricPluginManager(): void
     {
         $old = $this->blockCipher->getSymmetricPluginManager();
 
@@ -294,19 +287,19 @@ abstract class AbstractBlockCipherTest extends TestCase
         $this->blockCipher->setSymmetricPluginManager($old);
     }
 
-    public function testFactoryWithWrongAdapter()
+    public function testFactoryWithWrongAdapter(): void
     {
         $this->expectException(Exception\RuntimeException::class);
         $this->blockCipher = BlockCipher::factory('foo');
     }
 
-    public function testSetWrongSymmetricPluginManager()
+    public function testSetWrongSymmetricPluginManager(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setSymmetricPluginManager(stdClass::class);
     }
 
-    public function testSetNotExistingSymmetricPluginManager()
+    public function testSetNotExistingSymmetricPluginManager(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->blockCipher->setSymmetricPluginManager('Foo');

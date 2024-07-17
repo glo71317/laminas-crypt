@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Symmetric\Padding;
 
 use Laminas\Crypt\Symmetric\Padding\NoPadding;
@@ -15,7 +17,7 @@ class NoPaddingTest extends TestCase
         $this->padding = new NoPadding();
     }
 
-    public function testPad()
+    public function testPad(): void
     {
         $string = 'test';
         for ($size = 0; $size < 10; $size++) {
@@ -23,7 +25,7 @@ class NoPaddingTest extends TestCase
         }
     }
 
-    public function testStrip()
+    public function testStrip(): void
     {
         $string = 'test';
         $this->assertEquals($string, $this->padding->strip($string));

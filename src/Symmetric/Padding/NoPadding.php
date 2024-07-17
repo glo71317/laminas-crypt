@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laminas\Crypt\Symmetric\Padding;
 
 /**
@@ -9,12 +11,8 @@ class NoPadding implements PaddingInterface
 {
     /**
      * Pad a string, do nothing and return the string
-     *
-     * @param  string $string
-     * @param  int    $blockSize
-     * @return string
      */
-    public function pad($string, $blockSize = 32)
+    public function pad(string $string, int $blockSize = 32): string
     {
         return $string;
     }
@@ -22,10 +20,9 @@ class NoPadding implements PaddingInterface
     /**
      * Unpad a string, do nothing and return the string
      *
-     * @param  string $string
      * @return string
      */
-    public function strip($string)
+    public function strip(string $string): string|false
     {
         return $string;
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Key\Derivation;
 
 use Laminas\Crypt\Key\Derivation\Exception;
@@ -25,7 +27,7 @@ class SaltedS2kTest extends TestCase
         $this->salt = '12345678';
     }
 
-    public function testCalc()
+    public function testCalc(): void
     {
         if (! extension_loaded('hash')) {
             $this->markTestSkipped('The hash extension is not available');
@@ -37,7 +39,7 @@ class SaltedS2kTest extends TestCase
         $this->assertEquals('qzQISUBUSP1iqYtwe/druhdOVqluc/Y2TetdSHSbaw8=', base64_encode($password));
     }
 
-    public function testCalcWithWrongHash()
+    public function testCalcWithWrongHash(): void
     {
         if (! extension_loaded('hash')) {
             $this->markTestSkipped('The hash extension is not available');
@@ -52,7 +54,7 @@ class SaltedS2kTest extends TestCase
         SaltedS2k::calc('wrong', 'test', $this->salt, 32);
     }
 
-    public function testCalcWithWrongSalt()
+    public function testCalcWithWrongSalt(): void
     {
         if (! extension_loaded('hash')) {
             $this->markTestSkipped('The hash extension is not available');

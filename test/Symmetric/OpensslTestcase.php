@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Symmetric;
 
 use Laminas\Crypt\Symmetric\Openssl;
@@ -10,7 +12,7 @@ use function openssl_get_cipher_methods;
 /**
  * @group      Laminas_Crypt
  */
-class OpensslTest extends AbstractTest
+class OpensslTestcase extends AbstractTestcase
 {
     /** @var string */
     protected $adapterClass = Openssl::class;
@@ -24,7 +26,7 @@ class OpensslTest extends AbstractTest
     /** @var string */
     protected $defaultPadding = 'pkcs7';
 
-    public function testCtrMode()
+    public function testCtrMode(): void
     {
         if (! in_array('aes-256-ctr', openssl_get_cipher_methods())) {
             $this->markTestSkipped('The CTR mode is not supported');

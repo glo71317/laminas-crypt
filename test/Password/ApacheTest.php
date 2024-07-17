@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Password;
 
 use Laminas\Crypt\Password\Apache;
@@ -23,52 +25,46 @@ class ApacheTest extends TestCase
         $this->apache = new Apache();
     }
 
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $apache = new Apache(['format' => 'crypt']);
         $this->assertInstanceOf(Apache::class, $apache);
     }
 
-    public function testWrongConstruct()
-    {
-        $this->expectException(Exception\InvalidArgumentException::class);
-        new Apache('crypt');
-    }
-
-    public function testWrongParamConstruct()
+    public function testWrongParamConstruct(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         new Apache(['format' => 'crypto']);
     }
 
-    public function testSetUserName()
+    public function testSetUserName(): void
     {
         $result = $this->apache->setUserName('test');
         $this->assertInstanceOf(Apache::class, $result);
         $this->assertEquals('test', $this->apache->getUserName());
     }
 
-    public function testSetFormat()
+    public function testSetFormat(): void
     {
         $result = $this->apache->setFormat('crypt');
         $this->assertInstanceOf(Apache::class, $result);
         $this->assertEquals('crypt', $this->apache->getFormat());
     }
 
-    public function testSetWrongFormat()
+    public function testSetWrongFormat(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->apache->setFormat('test');
     }
 
-    public function testSetAuthName()
+    public function testSetAuthName(): void
     {
         $result = $this->apache->setAuthName('test');
         $this->assertInstanceOf(Apache::class, $result);
         $this->assertEquals('test', $this->apache->getAuthName());
     }
 
-    public function testCrypt()
+    public function testCrypt(): void
     {
         $this->apache->setFormat('crypt');
         $hash = $this->apache->create('myPassword');
@@ -76,14 +72,14 @@ class ApacheTest extends TestCase
         $this->assertTrue($this->apache->verify('myPassword', $hash));
     }
 
-    public function testSha1()
+    public function testSha1(): void
     {
         $this->apache->setFormat('sha1');
         $hash = $this->apache->create('myPassword');
         $this->assertTrue($this->apache->verify('myPassword', $hash));
     }
 
-    public function testMd5()
+    public function testMd5(): void
     {
         $this->apache->setFormat('md5');
         $hash = $this->apache->create('myPassword');
@@ -92,7 +88,7 @@ class ApacheTest extends TestCase
         $this->assertTrue($this->apache->verify('myPassword', $hash));
     }
 
-    public function testDigest()
+    public function testDigest(): void
     {
         $this->apache->setFormat('digest');
         $this->apache->setUserName('Enrico');
@@ -101,7 +97,7 @@ class ApacheTest extends TestCase
         $this->assertEquals(32, strlen($hash));
     }
 
-    public function testDigestWithoutPreset()
+    public function testDigestWithoutPreset(): void
     {
         $this->apache->setFormat('digest');
 
@@ -109,7 +105,7 @@ class ApacheTest extends TestCase
         $this->apache->create('myPassword');
     }
 
-    public function testDigestWithoutAuthName()
+    public function testDigestWithoutAuthName(): void
     {
         $this->apache->setFormat('digest');
         $this->apache->setUserName('Enrico');
@@ -118,7 +114,7 @@ class ApacheTest extends TestCase
         $this->apache->create('myPassword');
     }
 
-    public function testDigestWithoutUserName()
+    public function testDigestWithoutUserName(): void
     {
         $this->apache->setFormat('digest');
         $this->apache->setAuthName('Auth');
@@ -149,24 +145,24 @@ class ApacheTest extends TestCase
     /**
      * @dataProvider provideTestVectors
      */
-    public function testVerify(string $password, string $hash)
+    public function testVerify(string $password, string $hash): void
     {
         $this->assertTrue($this->apache->verify($password, $hash));
     }
 
-    public function testApr1Md5WrongSaltFormat1()
+    public function testApr1Md5WrongSaltFormat1(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->apache->verify('myPassword', '$apr1$z0Hhe5Lq3$6YdJKbkrJg77Dvw2gpuSA1');
     }
 
-    public function testApr1Md5WrongSaltFormat2()
+    public function testApr1Md5WrongSaltFormat2(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->apache->verify('myPassword', '$apr1$z0Hhe5L&$6YdJKbkrJg77Dvw2gpuSA1');
     }
 
-    public function testCanVerifyBcryptHashes()
+    public function testCanVerifyBcryptHashes(): void
     {
         $bcrypt = new Bcrypt();
         $hash   = $bcrypt->create('myPassword');

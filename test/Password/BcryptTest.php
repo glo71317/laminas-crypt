@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Password;
 
 use ArrayObject;
@@ -37,7 +39,7 @@ class BcryptTest extends TestCase
         $this->bcryptPassword = $this->prefix . '10$123456789012345678901uIcehzOq0s9RvVtyXJFIsuuxuE2XZRMq';
     }
 
-    public function testConstructByOptions()
+    public function testConstructByOptions(): void
     {
         $options = ['cost' => '15'];
         $bcrypt  = new Bcrypt($options);
@@ -48,7 +50,7 @@ class BcryptTest extends TestCase
      * This test uses ArrayObject to simulate a Laminas\Config\Config instance;
      * the class itself only tests for Traversable.
      */
-    public function testConstructByConfig()
+    public function testConstructByConfig(): void
     {
         $options = ['cost' => '15'];
         $config  = new ArrayObject($options);
@@ -56,40 +58,33 @@ class BcryptTest extends TestCase
         $this->assertEquals('15', $bcrypt->getCost());
     }
 
-    public function testWrongConstruct()
-    {
-        $this->expectException(Exception\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The options parameter must be an array or a Traversable');
-        new Bcrypt('test');
-    }
-
-    public function testSetCost()
+    public function testSetCost(): void
     {
         $this->bcrypt->setCost('16');
         $this->assertEquals('16', $this->bcrypt->getCost());
     }
 
-    public function testSetWrongCost()
+    public function testSetWrongCost(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('The cost parameter of bcrypt must be in range 04-31');
         $this->bcrypt->setCost('3');
     }
 
-    public function testCreateWithBuiltinSalt()
+    public function testCreateWithBuiltinSalt(): void
     {
         $password = $this->bcrypt->create('test');
         $this->assertNotEmpty($password);
         $this->assertEquals(60, strlen($password));
     }
 
-    public function testVerify()
+    public function testVerify(): void
     {
         $this->assertTrue($this->bcrypt->verify($this->password, $this->bcryptPassword));
         $this->assertFalse($this->bcrypt->verify(substr($this->password, -1), $this->bcryptPassword));
     }
 
-    public function testPasswordWith8bitCharacter()
+    public function testPasswordWith8bitCharacter(): void
     {
         $password = 'test' . chr(128);
         $hash     = $this->bcrypt->create($password);
@@ -99,25 +94,7 @@ class BcryptTest extends TestCase
         $this->assertTrue($this->bcrypt->verify($password, $hash));
     }
 
-    /**
-     * @requires PHP 7.0
-     */
-    public function testSetSaltError()
-    {
-        $this->expectError();
-        $this->bcrypt->setSalt('test');
-    }
-
-    /**
-     * @requires PHP 7.0
-     */
-    public function testGetSaltError()
-    {
-        $this->expectError();
-        $this->bcrypt->getSalt();
-    }
-
-    public function testBenchmarkCost()
+    public function testBenchmarkCost(): void
     {
         $cost = $this->bcrypt->benchmarkCost();
         $this->assertIsInt($cost);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt;
 
 use Laminas\Crypt\Exception as CryptException;
@@ -11,26 +13,17 @@ use Psr\Container\ContainerInterface;
 
 use function extension_loaded;
 
-use const PHP_VERSION_ID;
-
 class SymmetricPluginManagerTest extends TestCase
 {
     /** @psalm-return array<array-key, array{0: string}> */
-    public function getSymmetrics(): array
+    public static function getSymmetrics(): array
     {
-        if (PHP_VERSION_ID >= 70100) {
-            return [
-                ['openssl'],
-            ];
-        }
-
         return [
-            ['mcrypt'],
             ['openssl'],
         ];
     }
 
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $plugin = new SymmetricPluginManager();
         $this->assertInstanceOf(ContainerInterface::class, $plugin);
@@ -39,7 +32,7 @@ class SymmetricPluginManagerTest extends TestCase
     /**
      * @dataProvider getSymmetrics
      */
-    public function testHas(string $symmetric)
+    public function testHas(string $symmetric): void
     {
         $plugin = new SymmetricPluginManager();
         $this->assertTrue($plugin->has($symmetric));
@@ -48,7 +41,7 @@ class SymmetricPluginManagerTest extends TestCase
     /**
      * @dataProvider getSymmetrics
      */
-    public function testGet(string $symmetric)
+    public function testGet(string $symmetric): void
     {
         if (! extension_loaded($symmetric)) {
             $this->expectException(Exception\RuntimeException::class);
@@ -57,7 +50,7 @@ class SymmetricPluginManagerTest extends TestCase
         $this->assertInstanceOf(SymmetricInterface::class, $plugin->get($symmetric));
     }
 
-    public function testGetError()
+    public function testGetError(): void
     {
         $plugin = new SymmetricPluginManager();
 

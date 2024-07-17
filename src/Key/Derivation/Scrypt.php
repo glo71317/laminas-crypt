@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laminas\Crypt\Key\Derivation;
 
 use function extension_loaded;
@@ -24,15 +26,12 @@ abstract class Scrypt
     /**
      * Execute the scrypt algorithm
      *
-     * @param  string $password
-     * @param  string $salt
      * @param  int $n CPU cost
      * @param  int $r Memory cost
      * @param  int $p parallelization cost
      * @param  int $length size of the output key
-     * @return string
      */
-    public static function calc($password, $salt, $n, $r, $p, $length)
+    public static function calc(string $password, string $salt, int $n, int $r, int $p, int $length): string
     {
         if ($n === 0 || ($n & ($n - 1)) !== 0) {
             throw new Exception\InvalidArgumentException("N must be > 0 and a power of 2");
@@ -65,13 +64,8 @@ abstract class Scrypt
     * scryptROMix
     *
     * @see    https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-4
-    *
-    * @param  string $b
-    * @param  int $n
-    * @param  int $r
-    * @return string
     */
-    protected static function scryptROMix($b, $n, $r)
+    protected static function scryptROMix(string $b, int $n, int $r): string
     {
         $x = $b;
         $v = [];
@@ -91,12 +85,8 @@ abstract class Scrypt
      * scryptBlockMix
      *
      * @see    https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-3
-     *
-     * @param  string $b
-     * @param  int $r
-     * @return string
      */
-    protected static function scryptBlockMix($b, $r)
+    protected static function scryptBlockMix(string $b, int $r): string
     {
         $x    = mb_substr($b, -64, null, '8bit');
         $even = '';
@@ -123,11 +113,8 @@ abstract class Scrypt
      *
      * @see    https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-2
      * @see    http://cr.yp.to/salsa20.html
-     *
-     * @param  string $b
-     * @return string
      */
-    protected static function salsa208Core32($b)
+    protected static function salsa208Core32(string $b): string
     {
         $b32 = [];
         for ($i = 0; $i < 16; $i++) {
@@ -217,11 +204,8 @@ abstract class Scrypt
      *
      * @see    https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-2
      * @see    http://cr.yp.to/salsa20.html
-     *
-     * @param  string $b
-     * @return string
      */
-    protected static function salsa208Core64($b)
+    protected static function salsa208Core64(string $b): string
     {
         $b32 = [];
         for ($i = 0; $i < 16; $i++) {
@@ -314,11 +298,8 @@ abstract class Scrypt
      * Each block B is a string of 64 bytes.
      *
      * @see    https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-4
-     *
-     * @param  string $b
-     * @return int
      */
-    protected static function integerify($b)
+    protected static function integerify(string $b): int
     {
         $v = 'v';
         if (PHP_INT_SIZE === 8) {

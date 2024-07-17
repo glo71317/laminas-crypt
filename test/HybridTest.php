@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt;
 
 use Laminas\Crypt\BlockCipher;
@@ -23,13 +25,13 @@ class HybridTest extends TestCase
         $this->hybrid = new Hybrid();
     }
 
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $hybrid = new Hybrid();
         $this->assertInstanceOf(Hybrid::class, $hybrid);
     }
 
-    public function testConstructorWithParameters()
+    public function testConstructorWithParameters(): void
     {
         $hybrid = new Hybrid(
             $this->createMock(BlockCipher::class),
@@ -38,19 +40,19 @@ class HybridTest extends TestCase
         $this->assertInstanceOf(Hybrid::class, $hybrid);
     }
 
-    public function testGetDefaultBlockCipherInstance()
+    public function testGetDefaultBlockCipherInstance(): void
     {
         $bCipher = $this->hybrid->getBlockCipherInstance();
         $this->assertInstanceOf(BlockCipher::class, $bCipher);
     }
 
-    public function testGetDefaultRsaInstance()
+    public function testGetDefaultRsaInstance(): void
     {
         $rsa = $this->hybrid->getRsaInstance();
         $this->assertInstanceOf(Rsa::class, $rsa);
     }
 
-    public function testEncryptDecryptWithOneStringKey()
+    public function testEncryptDecryptWithOneStringKey(): void
     {
         $rsaOptions = new RsaOptions();
         $rsaOptions->generateKeys([
@@ -64,7 +66,7 @@ class HybridTest extends TestCase
         $this->assertEquals('test', $plaintext);
     }
 
-    public function testEncryptDecryptWithOneStringKeyAndPassphrase()
+    public function testEncryptDecryptWithOneStringKeyAndPassphrase(): void
     {
         $passPhrase = 'test';
         $rsaOptions = new RsaOptions([
@@ -81,7 +83,7 @@ class HybridTest extends TestCase
         $this->assertEquals('test', $plaintext);
     }
 
-    public function testEncryptWithMultipleStringKeys()
+    public function testEncryptWithMultipleStringKeys(): void
     {
         $publicKeys  = [];
         $privateKeys = [];
@@ -97,12 +99,12 @@ class HybridTest extends TestCase
 
         $encrypted = $this->hybrid->encrypt('test', $publicKeys);
         for ($id = 0; $id < 5; $id++) {
-            $plaintext = $this->hybrid->decrypt($encrypted, $privateKeys[$id], null, $id);
+            $plaintext = $this->hybrid->decrypt($encrypted, $privateKeys[$id], null, (string) $id);
             $this->assertEquals('test', $plaintext);
         }
     }
 
-    public function testEncryptDecryptWithOneObjectKey()
+    public function testEncryptDecryptWithOneObjectKey(): void
     {
         $rsaOptions = new RsaOptions();
         $rsaOptions->generateKeys([
@@ -116,7 +118,7 @@ class HybridTest extends TestCase
         $this->assertEquals('test', $plaintext);
     }
 
-    public function testEncryptWithMultipleObjectKeys()
+    public function testEncryptWithMultipleObjectKeys(): void
     {
         $publicKeys  = [];
         $privateKeys = [];
@@ -132,12 +134,12 @@ class HybridTest extends TestCase
 
         $encrypted = $this->hybrid->encrypt('test', $publicKeys);
         for ($id = 0; $id < 5; $id++) {
-            $plaintext = $this->hybrid->decrypt($encrypted, $privateKeys[$id], null, $id);
+            $plaintext = $this->hybrid->decrypt($encrypted, $privateKeys[$id], null, (string) $id);
             $this->assertEquals('test', $plaintext);
         }
     }
 
-    public function testFailToDecryptWithOneKey()
+    public function testFailToDecryptWithOneKey(): void
     {
         $rsaOptions = new RsaOptions();
         $rsaOptions->generateKeys([
@@ -158,7 +160,7 @@ class HybridTest extends TestCase
         $this->hybrid->decrypt($encrypted, $privateKey);
     }
 
-    public function testFailToEncryptUsingPrivateKey()
+    public function testFailToEncryptUsingPrivateKey(): void
     {
         $rsaOptions = new RsaOptions();
         $rsaOptions->generateKeys([

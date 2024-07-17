@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Key\Derivation;
 
 use Laminas\Crypt\Key\Derivation\Exception;
@@ -36,7 +38,7 @@ class ScryptTest extends TestCase
      *
      * @see https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-7
      */
-    public function testVectorSalsa208Core()
+    public function testVectorSalsa208Core(): void
     {
         $hexInput = '7e 87 9a 21 4f 3e c9 86 7c a9 40 e6 41 71 8f 26
                       ba ee 55 5b 8c 61 c1 b5 0d f8 46 11 6d cd 3b 1d
@@ -58,8 +60,8 @@ class ScryptTest extends TestCase
         $result  = $salsa20->invokeArgs($obj, [$input]);
 
         $this->assertEquals(64, strlen($input), 'Input must be a string of 64 bytes');
-        $this->assertEquals(64, strlen($result), 'Output must be a string of 64 bytes');
-        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex($result));
+        $this->assertEquals(64, strlen((string) $result), 'Output must be a string of 64 bytes');
+        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex((string) $result));
     }
 
     /**
@@ -67,7 +69,7 @@ class ScryptTest extends TestCase
      *
      * @see https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-8
      */
-    public function testVectorScryptBlockMix()
+    public function testVectorScryptBlockMix(): void
     {
         $hexInput = 'f7 ce 0b 65 3d 2d 72 a4 10 8c f5 ab e9 12 ff dd
                       77 76 16 db bb 27 a7 0e 82 04 f3 ae 2d 0f 6f ad
@@ -94,7 +96,7 @@ class ScryptTest extends TestCase
         $input    = self::hex2bin(str_replace([' ', "\n"], '', $hexInput));
         $result   = $blockMix->invokeArgs($obj, [$input, 1]);
 
-        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex($result));
+        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex((string) $result));
     }
 
     /**
@@ -102,7 +104,7 @@ class ScryptTest extends TestCase
      *
      * @see https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-9
      */
-    public function testVectorScryptROMix()
+    public function testVectorScryptROMix(): void
     {
         $hexInput = 'f7 ce 0b 65 3d 2d 72 a4 10 8c f5 ab e9 12 ff dd
                       77 76 16 db bb 27 a7 0e 82 04 f3 ae 2d 0f 6f ad
@@ -127,7 +129,7 @@ class ScryptTest extends TestCase
         $input  = self::hex2bin(str_replace([' ', "\n"], '', $hexInput));
         $result = $roMix->invokeArgs($obj, [$input, 16, 1]);
 
-        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex($result));
+        $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex((string) $result));
     }
 
     /**
@@ -135,7 +137,7 @@ class ScryptTest extends TestCase
      *
      * @see https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01#section-11
      */
-    public function testVectorScrypt()
+    public function testVectorScrypt(): void
     {
         $hexOutput = 'd3 3c 6e c1 81 8d aa f7 28 f5 5a fa df ea a5 58
                       b3 8e fa 81 30 5b 35 21 a7 f1 2f 4b e0 97 e8 4d
@@ -147,28 +149,28 @@ class ScryptTest extends TestCase
         $this->assertEquals(str_replace([' ', "\n"], '', $hexOutput), bin2hex($result));
     }
 
-    public function testScryptWrongN1()
+    public function testScryptWrongN1(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         Scrypt::calc('test', 'salt', 17, 1, 1, 64);
     }
 
-    public function testScryptWronN2()
+    public function testScryptWronN2(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         Scrypt::calc('test', 'salt', PHP_INT_MAX, 1, 1, 64);
     }
 
-    public function testScryptWrongR()
+    public function testScryptWrongR(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
-        Scrypt::calc('test', 'salt', PHP_INT_MAX / 128, 4, 1, 64);
+        Scrypt::calc('test', 'salt', (int) (PHP_INT_MAX / 128), 4, 1, 64);
     }
 
     /**
      * Test scrypt correct size output
      */
-    public function testScryptSize()
+    public function testScryptSize(): void
     {
         for ($size = 0; $size < 64; $size++) {
             if (extension_loaded('Scrypt') && ($size < 16)) {
@@ -183,9 +185,8 @@ class ScryptTest extends TestCase
      * Convert a string with hex values in binary string
      *
      * @param  string $hex
-     * @return string
      */
-    protected static function hex2bin($hex)
+    protected static function hex2bin($hex): string
     {
         $len    = strlen($hex);
         $result = '';

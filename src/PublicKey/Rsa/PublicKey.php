@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laminas\Crypt\PublicKey\Rsa;
 
 use function file_get_contents;
@@ -10,7 +12,7 @@ use function openssl_pkey_get_details;
 use function openssl_pkey_get_public;
 use function openssl_public_decrypt;
 use function openssl_public_encrypt;
-use function strpos;
+use function str_contains;
 
 use const OPENSSL_PKCS1_OAEP_PADDING;
 use const OPENSSL_PKCS1_PADDING;
@@ -22,18 +24,15 @@ class PublicKey extends AbstractKey
 {
     public const CERT_START = '-----BEGIN CERTIFICATE-----';
 
-    /** @var string */
-    protected $certificateString;
+    protected string $certificateString;
 
     /**
      * Create public key instance public key from PEM formatted key file
      * or X.509 certificate file
      *
-     * @param  string      $pemOrCertificateFile
-     * @return PublicKey
      * @throws Exception\InvalidArgumentException
      */
-    public static function fromFile($pemOrCertificateFile)
+    public static function fromFile(string $pemOrCertificateFile): PublicKey
     {
         if (! is_readable($pemOrCertificateFile)) {
             throw new Exception\InvalidArgumentException(
@@ -47,10 +46,9 @@ class PublicKey extends AbstractKey
     /**
      * Construct public key with PEM formatted string or X.509 certificate
      *
-     * @param  string $pemStringOrCertificate
      * @throws Exception\RuntimeException
      */
-    public function __construct($pemStringOrCertificate)
+    public function __construct(string $pemStringOrCertificate)
     {
         $result = openssl_pkey_get_public($pemStringOrCertificate);
         if (false === $result) {
@@ -59,7 +57,7 @@ class PublicKey extends AbstractKey
             );
         }
 
-        if (strpos($pemStringOrCertificate, self::CERT_START) !== false) {
+        if (str_contains($pemStringOrCertificate, self::CERT_START)) {
             $this->certificateString = $pemStringOrCertificate;
         } else {
             $this->pemString = $pemStringOrCertificate;
@@ -78,15 +76,12 @@ class PublicKey extends AbstractKey
      *
      * @see http://archiv.infsec.ethz.ch/education/fs08/secsem/bleichenbacher98.pdf
      *
-     * @param  string $data
-     * @param  string $padding
      * @throws Exception\InvalidArgumentException
      * @throws Exception\RuntimeException
-     * @return string
      */
-    public function encrypt($data, $padding = OPENSSL_PKCS1_OAEP_PADDING)
+    public function encrypt(string $data, int $padding = OPENSSL_PKCS1_OAEP_PADDING): string
     {
-        if (empty($data)) {
+        if ($data === '' || $data === '0') {
             throw new Exception\InvalidArgumentException('The data to encrypt cannot be empty');
         }
 
@@ -104,13 +99,10 @@ class PublicKey extends AbstractKey
     /**
      * Decrypt using this key
      *
-     * @param  string $data
-     * @param  string $padding
-     * @throws Exception\InvalidArgumentException
      * @throws Exception\RuntimeException
-     * @return string
+     * @throws Exception\InvalidArgumentException
      */
-    public function decrypt($data, $padding = OPENSSL_PKCS1_PADDING)
+    public function decrypt(string $data, int $padding = OPENSSL_PKCS1_PADDING): string
     {
         if (! is_string($data)) {
             throw new Exception\InvalidArgumentException('The data to decrypt must be a string');
@@ -131,26 +123,15 @@ class PublicKey extends AbstractKey
     }
 
     /**
-     * Get certificate string
-     *
-     * @return string
-     */
-    public function getCertificate()
-    {
-        return $this->certificateString;
-    }
-
-    /**
      * To string
      *
-     * @return string
      * @throws Exception\RuntimeException
      */
-    public function toString()
+    public function toString(): string
     {
-        if (! empty($this->certificateString)) {
+        if (isset($this->certificateString) && ($this->certificateString !== '' && $this->certificateString !== '0')) {
             return $this->certificateString;
-        } elseif (! empty($this->pemString)) {
+        } elseif ($this->pemString !== '' && $this->pemString !== '0') {
             return $this->pemString;
         }
         throw new Exception\RuntimeException('No public key string representation is available');

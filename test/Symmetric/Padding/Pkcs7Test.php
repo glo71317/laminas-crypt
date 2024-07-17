@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt\Symmetric\Padding;
 
 use Laminas\Crypt\Symmetric\Padding\Pkcs7;
 use PHPUnit\Framework\TestCase;
 
 use function chr;
-use function rand;
+use function random_int;
 use function str_repeat;
 
 class Pkcs7Test extends TestCase
@@ -25,11 +27,11 @@ class Pkcs7Test extends TestCase
         $this->end     = 32;
     }
 
-    public function testPad()
+    public function testPad(): void
     {
         for ($blockSize = $this->start; $blockSize <= $this->end; $blockSize++) {
             for ($i = 1; $i <= $blockSize; $i++) {
-                $input  = str_repeat(chr(rand(0, 255)), $i);
+                $input  = str_repeat(chr(random_int(0, 255)), $i);
                 $output = $this->padding->pad($input, $blockSize);
                 $num    = $blockSize - ($i % $blockSize);
                 $this->assertEquals($output, $input . str_repeat(chr($num), $num));
@@ -37,7 +39,7 @@ class Pkcs7Test extends TestCase
         }
     }
 
-    public function testStrip()
+    public function testStrip(): void
     {
         for ($blockSize = $this->start; $blockSize <= $this->end; $blockSize++) {
             for ($i = 1; $i < $blockSize; $i++) {

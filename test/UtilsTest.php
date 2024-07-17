@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LaminasTest\Crypt;
 
 use Laminas\Crypt\Utils;
@@ -15,7 +17,7 @@ use PHPUnit\Framework\TestCase;
  */
 class UtilsTest extends TestCase
 {
-    public function testCompareStringsBasic()
+    public function testCompareStringsBasic(): void
     {
         $this->assertTrue(Utils::compareStrings('test', 'test'));
         $this->assertFalse(Utils::compareStrings('test', 'Test'));

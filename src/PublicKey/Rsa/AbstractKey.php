@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laminas\Crypt\PublicKey\Rsa;
 
-abstract class AbstractKey
+use Stringable;
+
+abstract class AbstractKey implements Stringable
 {
     public const DEFAULT_KEY_SIZE = 2048;
 
     /**
      * PEM formatted key
-     *
-     * @var string
      */
-    protected $pemString;
+    protected string $pemString;
 
     /**
      * Key Resource
@@ -22,20 +24,8 @@ abstract class AbstractKey
 
     /**
      * Openssl details array
-     *
-     * @var array
      */
-    protected $details = [];
-
-    /**
-     * Get key size in bits
-     *
-     * @return int
-     */
-    public function getSize()
-    {
-        return $this->details['bits'];
-    }
+    protected array $details = [];
 
     /**
      * Retrieve openssl key resource
@@ -51,32 +41,24 @@ abstract class AbstractKey
      * Encrypt using this key
      *
      * @abstract
-     * @param string $data
-     * @return string
      */
-    abstract public function encrypt($data);
+    abstract public function encrypt(string $data): string;
 
     /**
      * Decrypt using this key
      *
      * @abstract
-     * @param string $data
-     * @return string
      */
-    abstract public function decrypt($data);
+    abstract public function decrypt(string $data): string;
 
     /**
      * Get string representation of this key
      *
      * @abstract
-     * @return string
      */
-    abstract public function toString();
+    abstract public function toString(): string;
 
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }
