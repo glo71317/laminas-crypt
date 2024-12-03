@@ -4,25 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8dc4de8c319025c7be582a966c850c14",
+    "content-hash": "7739e3af209473de932b3b88beb9b6ba",
     "packages": [
         {
             "name": "laminas/laminas-math",
-            "version": "3.7.0",
+            "version": "dev-php8.4_support",
             "source": {
                 "type": "git",
-                "url": "https://github.com/laminas/laminas-math.git",
-                "reference": "3e90445828fd64308de2a600b48c3df051b3b17a"
+                "url": "https://github.com/Atul-glo35265/laminas-math.git",
+                "reference": "193e5cd9e989aee66e7a866a8a016531d4291235"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-math/zipball/3e90445828fd64308de2a600b48c3df051b3b17a",
-                "reference": "3e90445828fd64308de2a600b48c3df051b3b17a",
+                "url": "https://api.github.com/repos/Atul-glo35265/laminas-math/zipball/193e5cd9e989aee66e7a866a8a016531d4291235",
+                "reference": "193e5cd9e989aee66e7a866a8a016531d4291235",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0"
+                "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0"
             },
             "conflict": {
                 "zendframework/zend-math": "*"
@@ -47,7 +47,32 @@
                     "Laminas\\Math\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "LaminasTest\\Math\\": "test/"
+                },
+                "files": [
+                    "test/TestAsset/random_bytes.php"
+                ]
+            },
+            "scripts": {
+                "check": [
+                    "@cs-check",
+                    "@test"
+                ],
+                "cs-check": [
+                    "phpcs"
+                ],
+                "cs-fix": [
+                    "phpcbf"
+                ],
+                "test": [
+                    "phpunit --colors=always"
+                ],
+                "test-coverage": [
+                    "phpunit --colors=always --coverage-clover clover.xml"
+                ]
+            },
             "license": [
                 "BSD-3-Clause"
             ],
@@ -58,20 +83,14 @@
                 "math"
             ],
             "support": {
-                "chat": "https://laminas.dev/chat",
                 "docs": "https://docs.laminas.dev/laminas-math/",
-                "forum": "https://discourse.laminas.dev",
                 "issues": "https://github.com/laminas/laminas-math/issues",
+                "source": "https://github.com/laminas/laminas-math",
                 "rss": "https://github.com/laminas/laminas-math/releases.atom",
-                "source": "https://github.com/laminas/laminas-math"
+                "chat": "https://laminas.dev/chat",
+                "forum": "https://discourse.laminas.dev"
             },
-            "funding": [
-                {
-                    "url": "https://funding.communitybridge.org/projects/laminas-project",
-                    "type": "community_bridge"
-                }
-            ],
-            "time": "2023-10-18T09:53:37+00:00"
+            "time": "2024-10-10T05:46:43+00:00"
         },
         {
             "name": "laminas/laminas-stdlib",
@@ -2185,7 +2204,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "laminas/laminas-math": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
