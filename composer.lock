@@ -4,25 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7739e3af209473de932b3b88beb9b6ba",
+    "content-hash": "f91586065e3687a4301fd1598343a6ea",
     "packages": [
         {
             "name": "laminas/laminas-math",
-            "version": "dev-php8.4_support",
+            "version": "3.8.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Atul-glo35265/laminas-math.git",
-                "reference": "193e5cd9e989aee66e7a866a8a016531d4291235"
+                "url": "https://github.com/laminas/laminas-math.git",
+                "reference": "a9e54f68accf5f8a3e66dd01fc6b32180e520018"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Atul-glo35265/laminas-math/zipball/193e5cd9e989aee66e7a866a8a016531d4291235",
-                "reference": "193e5cd9e989aee66e7a866a8a016531d4291235",
+                "url": "https://api.github.com/repos/laminas/laminas-math/zipball/a9e54f68accf5f8a3e66dd01fc6b32180e520018",
+                "reference": "a9e54f68accf5f8a3e66dd01fc6b32180e520018",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0"
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0"
             },
             "conflict": {
                 "zendframework/zend-math": "*"
@@ -47,32 +47,7 @@
                     "Laminas\\Math\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaminasTest\\Math\\": "test/"
-                },
-                "files": [
-                    "test/TestAsset/random_bytes.php"
-                ]
-            },
-            "scripts": {
-                "check": [
-                    "@cs-check",
-                    "@test"
-                ],
-                "cs-check": [
-                    "phpcs"
-                ],
-                "cs-fix": [
-                    "phpcbf"
-                ],
-                "test": [
-                    "phpunit --colors=always"
-                ],
-                "test-coverage": [
-                    "phpunit --colors=always --coverage-clover clover.xml"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -83,14 +58,21 @@
                 "math"
             ],
             "support": {
-                "docs": "https://docs.laminas.dev/laminas-math/",
-                "issues": "https://github.com/laminas/laminas-math/issues",
-                "source": "https://github.com/laminas/laminas-math",
-                "rss": "https://github.com/laminas/laminas-math/releases.atom",
                 "chat": "https://laminas.dev/chat",
-                "forum": "https://discourse.laminas.dev"
+                "docs": "https://docs.laminas.dev/laminas-math/",
+                "forum": "https://discourse.laminas.dev",
+                "issues": "https://github.com/laminas/laminas-math/issues",
+                "rss": "https://github.com/laminas/laminas-math/releases.atom",
+                "source": "https://github.com/laminas/laminas-math"
             },
-            "time": "2024-10-10T05:46:43+00:00"
+            "funding": [
+                {
+                    "url": "https://funding.communitybridge.org/projects/laminas-project",
+                    "type": "community_bridge"
+                }
+            ],
+            "abandoned": true,
+            "time": "2024-12-05T13:49:56+00:00"
         },
         {
             "name": "laminas/laminas-stdlib",
@@ -2204,9 +2186,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "laminas/laminas-math": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
